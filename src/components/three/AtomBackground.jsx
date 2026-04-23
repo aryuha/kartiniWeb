@@ -20,7 +20,7 @@ export default function AtomBackground() {
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 200);
-        // ✅ Lebih dekat
+        // Lebih dekat
         camera.position.set(10, 0, 10);
 
         // ═══════════════════════════════
@@ -28,7 +28,7 @@ export default function AtomBackground() {
         // ═══════════════════════════════
         const atomGroup = new THREE.Group();
         scene.add(atomGroup);
-        // ✅ Scale lebih besar
+        // Scale lebih besar
         atomGroup.scale.setScalar(1.4);
 
         // Inti atom
@@ -52,7 +52,7 @@ export default function AtomBackground() {
         });
         atomGroup.add(new THREE.Mesh(haloGeo, haloMat));
 
-        // Orbit elektron - ✅ Lebih besar
+        // Orbit elektron - Lebih besar
         const orbits = [
             { rx: 4.2, ry: 1.5, rotX: 0, rotY: 0, color: 0x2563eb, speed: 0.8 },
             { rx: 4.2, ry: 1.5, rotX: Math.PI / 3, rotY: 0, color: 0x3b82f6, speed: -0.6 },
@@ -66,7 +66,7 @@ export default function AtomBackground() {
             g.rotation.y = o.rotY;
             atomGroup.add(g);
 
-            // ✅ Ring lebih tebal & jelas
+            //  Ring lebih tebal & jelas
             const ringGeo = new THREE.TorusGeometry(o.rx, 0.038, 8, 120);
             const ringMat = new THREE.MeshBasicMaterial({
                 color: o.color, transparent: true, opacity: 0.85,
@@ -75,12 +75,12 @@ export default function AtomBackground() {
             ring.scale.y = o.ry / o.rx;
             g.add(ring);
 
-            // ✅ Elektron lebih besar
+            // Elektron lebih besar
             const eGeo = new THREE.SphereGeometry(0.22, 16, 16);
             const eMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
             const electron = new THREE.Mesh(eGeo, eMat);
 
-            // ✅ Glow elektron lebih besar
+            // Glow elektron lebih besar
             const egGeo = new THREE.SphereGeometry(0.38, 16, 16);
             const egMat = new THREE.MeshBasicMaterial({
                 color: o.color, transparent: true, opacity: 0.55,
@@ -228,7 +228,7 @@ export default function AtomBackground() {
             atomSmall1.rotation.y += 0.004;
             atomSmall2.rotation.y -= 0.003;
 
-            // ✅ Nucleus pulse lebih dramatis
+            // Nucleus pulse lebih dramatis
             const pulse = 1 + Math.sin(t * 2) * 0.12;
             nucleus.scale.setScalar(pulse);
             glowMat.opacity = 0.18 + Math.sin(t * 2) * 0.12;
