@@ -12,7 +12,7 @@ export const ProgressProvider = ({ children }) => {
         setProgress(prev => ({ ...prev, [stepKey]: true }));
     };
 
-    // ✅ Hanya reset saat dipanggil eksplisit (klik kembali ke homepage)
+    // Hanya reset saat dipanggil eksplisit (klik kembali ke homepage)
     const resetProgress = () => {
         setProgress({ ...EMPTY });
     };
