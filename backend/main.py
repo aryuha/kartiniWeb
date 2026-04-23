@@ -160,7 +160,7 @@ class ReactorPhysics:
         power_kw = power_fraction * cls.NOMINAL_POWER_KW
         power_percent = (power_fraction / cls.NOMINAL_POWER_KW) * 100
         
-        # ← BARU: Cek apakah melewati threshold SCRAM
+        # Cek apakah melewati threshold SCRAM
         scram_triggered = power_kw >= cls.SCRAM_THRESHOLD_KW
         if scram_triggered:
             status = "SCRAM_TRIGGERED"
