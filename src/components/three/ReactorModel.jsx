@@ -125,9 +125,9 @@ function Vessel() {
                     metalness={0.8}
                     roughness={0.15}
                     transparent
-                    opacity={0.15}          // ← turunkan dari 0.40 ke 0.15
+                    opacity={0.15}          
                     side={THREE.DoubleSide}
-                    depthWrite={false}      // ← tambahkan
+                    depthWrite={false}     
                 />
             </mesh>
 
@@ -428,7 +428,7 @@ function CoreVolumeGlow({ power, isOperating }) {
 // HELPER — warna driveTop berdasarkan posisi
 // ═══════════════════════════════════════════
 function getDriveTopColor(pct, isMoving) {
-    if (isMoving) return '#FF0000'   // ← MERAH saat bergerak
+    if (isMoving) return '#FF0000'   // MERAH saat bergerak
     if (pct <= 0) return '#525252'  // abu-abu (0%)
     if (pct >= 100) return '#22c55e'  // hijau (100%)
     return '#f97316'                   // oranye (1-99%)
@@ -437,7 +437,7 @@ function getDriveTopColor(pct, isMoving) {
 // ═══════════════════════════════════════════
 // BATANG KENDALI
 // ═══════════════════════════════════════════
-function ControlRod({ type, pct, isMoving }) {  // ← tambahkan isMoving di props
+function ControlRod({ type, pct, isMoving }) {  
     const cfg = CR_CFG[type]
     const pos = CR_POS[type]
 
@@ -452,7 +452,7 @@ function ControlRod({ type, pct, isMoving }) {  // ← tambahkan isMoving di pro
     const connLen = Math.max(0.05, DRIVE_Y - rodTopY)
     const connMidY = rodTopY + connLen / 2
 
-    // ← isMoving sudah terdefinisi dari props, baru panggil getDriveTopColor
+    // isMoving sudah terdefinisi dari props, baru panggil getDriveTopColor
     const driveTopColor = getDriveTopColor(pct, isMoving)
 
     return (
