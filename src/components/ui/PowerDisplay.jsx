@@ -3,8 +3,8 @@ import React, { useRef, useEffect } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 
 // ── Konstanta Power ──
-const MAX_POWER_KW = 120    // ← UBAH dari 100 ke 120
-const SCRAM_THRESHOLD_KW = 110  // ← BARU: threshold auto-SCRAM
+const MAX_POWER_KW = 120    // Max Daya
+const SCRAM_THRESHOLD_KW = 110  //threshold auto-SCRAM
 const NOMINAL_POWER_KW = 100
 // ── Gauge Canvas ──
 function PowerGauge({ value, maxValue = 120 }) {
@@ -22,7 +22,7 @@ function PowerGauge({ value, maxValue = 120 }) {
         const startA = Math.PI * 0.8
         const endA = Math.PI * 2.2
 
-        // ── PERBAIKAN: gunakan kW / maxKW bukan % / 100 ──
+        // ── Perhitungan daya gunakan kW / maxKW ──
         const ratio = Math.min(1, value / maxValue)  // 0.0 - 1.0
         const valA = startA + ratio * (endA - startA)
 
@@ -76,7 +76,7 @@ function PowerGauge({ value, maxValue = 120 }) {
             ctx.stroke()
         }
 
-        // ── TAMBAH: Marker tick khusus 100kW (tick ke-10) ──
+        // ── Marker tick khusus 100kW (tick ke-10) ──
         const nominalA = startA + (100 / maxValue) * (endA - startA)
         ctx.beginPath()
         ctx.moveTo(
@@ -158,21 +158,21 @@ export default function PowerDisplay({ reactorData, isScrammed }) {
     // Status label
     const getStatusLabel = () => {
         if (isScrammed) return isId ? '🚨 SCRAM AKTIF' : '🚨 SCRAM ACTIVE'
-        // ← BARU: label BAHAYA untuk zona 110-120kW
+        // label BAHAYA untuk zona 110-120kW
         if (power > 91.7) return isId ? '⚠ DAYA BAHAYA' : '⚠ DANGER POWER'
         if (power > 62.5) return isId ? 'DAYA SEDANG' : 'MEDIUM POWER'
         if (power > 5) return isId ? 'DAYA RENDAH' : 'LOW POWER'
         return isId ? 'REAKTOR MATI' : 'REACTOR OFF'
     }
 
-    // ← UBAH label skala bar: 0, 60 kW, 120 kW
+    // label skala bar: 0, 60 kW, 120 kW
     //const BAR_LABELS = ['0', '60 kW', '120 kW']
 
-    // ← BARU: Progress bar fill - scale terhadap 120kW
+    // Progress bar fill - scale terhadap 120kW
     // powerKw / 120 * 100 untuk mendapatkan % bar
     const barFillPercent = Math.min(100, (powerKw / MAX_POWER_KW) * 100)
 
-    // ← BARU: Indikator SCRAM threshold line (110/120 = 91.7%)
+    // Indikator SCRAM threshold line (110/120 = 91.7%)
     const scramLinePercent = (SCRAM_THRESHOLD_KW / MAX_POWER_KW) * 100 // 91.7%
     const nominalLinePercent = (NOMINAL_POWER_KW / MAX_POWER_KW) * 100  // 83.3%
 
@@ -208,7 +208,7 @@ export default function PowerDisplay({ reactorData, isScrammed }) {
                     position: 'relative',
                     overflow: 'visible',
                     padding: 0,
-                    display: 'flex',  // ← TAMBAH: flex untuk multi segment
+                    display: 'flex',  // TAMBAH: flex untuk multi segment
                 }}>
 
                     {/* ── Multi-color bar segments ── */}
