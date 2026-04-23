@@ -12,7 +12,7 @@ import MateriPage from './components/pages/MateriPage';
 function App() {
   return (
     <LanguageProvider>
-      {/* ✅ ProgressProvider di luar Router agar state tidak hancur saat navigate */}
+      {/* ProgressProvider di luar Router agar state tidak hancur saat navigate */}
       <ProgressProvider>
         <Router
           future={{
