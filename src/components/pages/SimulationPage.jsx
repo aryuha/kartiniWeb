@@ -241,13 +241,13 @@ function LeftPanel({ rodPositions, reactorData, isScrammed, isVisible, onToggle 
     }
 
     return (
-        // ✅ Wrapper relatif — hanya untuk posisi toggle button
+        // Wrapper relatif — hanya untuk posisi toggle button
         <div style={{ position: 'relative', display: 'flex', height: '100%' }}>
 
-            {/* ✅ Panel — width berubah saat hide/show */}
+            {/* Panel — width berubah saat hide/show */}
             <div style={{
                 ...lp.panel,
-                width: isVisible ? 276 : 0,        // ✅ width collapse ke 0
+                width: isVisible ? 276 : 0,        //  width collapse ke 0
                 borderRight: isVisible ? '1px solid #d0dce8' : 'none',
             }}>
                 {/* Semua konten hanya render saat visible agar tidak ada overflow */}
@@ -336,7 +336,7 @@ function LeftPanel({ rodPositions, reactorData, isScrammed, isVisible, onToggle 
                 )}
             </div>
 
-            {/* ✅ Toggle button — posisi ikut width panel */}
+            {/* Toggle button — posisi ikut width panel */}
             <button
                 style={{
                     ...lp.toggleBtn,
@@ -547,11 +547,11 @@ const ps = {
     page: { width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', background: '#f0f4f8', overflow: 'hidden', position: 'relative' },
     body: { flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0, position: 'relative' },
     scene: {
-        flex: 1,           // ✅ ini yang bikin scene melebar otomatis
+        flex: 1,           // ini yang bikin scene melebar otomatis
         position: 'relative',
         overflow: 'hidden',
         background: '#dce8f5',
-        transition: 'flex 0.3s ease',  // ✅ smooth transition
+        transition: 'flex 0.3s ease',  // smooth transition
         minWidth: 0,
     },
     toggleBtn: {
@@ -566,7 +566,7 @@ const ps = {
         transition: 'left 0.3s ease',
     },
 
-    // ✅ Ganti panel — pakai width transition, bukan transform
+    // Ganti panel — pakai width transition, bukan transform
     panel: {
         height: '100%',
         background: '#ffffff',
@@ -577,7 +577,7 @@ const ps = {
         flexShrink: 0,
         zIndex: 20,
         overflow: 'hidden',
-        // ✅ Animasi width — saat hide width jadi 0
+        // Animasi width — saat hide width jadi 0
         transition: 'width 0.3s ease',
     },
     overlayHint: {
