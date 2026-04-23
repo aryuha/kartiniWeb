@@ -32,8 +32,8 @@ export default function RodControl({
     isMoving,
     onStartHold,
     onStopHold,
-    activeUp = false,  // ← NEW: tombol atas aktif via keyboard
-    activeDown = false,  // ← NEW: tombol bawah aktif via keyboard
+    activeUp = false,  //tombol atas aktif via keyboard
+    activeDown = false,  // tombol bawah aktif via keyboard
 }) {
     const { language } = useLanguage()
     const lang = language || 'id'
@@ -93,7 +93,7 @@ export default function RodControl({
         background: isScrammed
             ? '#f5f8fc'
             : activeUp
-                ? baseColor                   // ← Menyala penuh saat keyboard ditekan
+                ? baseColor                   // Menyala penuh saat keyboard ditekan
                 : isMoving
                     ? `${baseColor}22`
                     : `${baseColor}0f`,
@@ -111,7 +111,7 @@ export default function RodControl({
         background: isScrammed
             ? '#f5f8fc'
             : activeDown
-                ? baseColor                   // ← Menyala penuh saat keyboard ditekan
+                ? baseColor                   //Menyala penuh saat keyboard ditekan
                 : isMoving
                     ? `${baseColor}22`
                     : `${baseColor}0f`,
