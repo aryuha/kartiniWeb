@@ -32,14 +32,14 @@ export default function AtomBackground() {
         atomGroup.scale.setScalar(1.4);
 
         // Inti atom
-        const nucleusGeo = new THREE.SphereGeometry(0.65, 32, 32); // ✅ Lebih besar
+        const nucleusGeo = new THREE.SphereGeometry(0.65, 32, 32); // Lebih besar
         const nucleus = new THREE.Mesh(nucleusGeo,
             new THREE.MeshBasicMaterial({ color: 0x1e4fd8 })
         );
         atomGroup.add(nucleus);
 
         // Glow inti
-        const glowGeo = new THREE.SphereGeometry(0.95, 32, 32); // ✅ Lebih besar
+        const glowGeo = new THREE.SphereGeometry(0.95, 32, 32); // Lebih besar
         const glowMat = new THREE.MeshBasicMaterial({
             color: 0x3b82f6, transparent: true, opacity: 0.22,
         });
