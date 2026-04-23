@@ -409,7 +409,7 @@ function FloatingDots() {
 
 // ── Styles ──
 const s = {
-    // ✅ Full page, no scroll
+    // Full page, no scroll
     page: {
         position: 'relative',
         width: '100vw',
@@ -439,7 +439,7 @@ const s = {
     },
     langPos: { position: 'fixed', top: 14, right: 14, zIndex: 100 },
 
-    // ✅ Layout utama — fit 1 layar
+    // Layout utama — fit 1 layar
     layout: {
         position: 'relative', zIndex: 10,
         width: '100%',
@@ -449,7 +449,7 @@ const s = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 'clamp(6px, 1vh, 14px)',   // ✅ gap responsif
+        gap: 'clamp(6px, 1vh, 14px)',   // gap responsif
         overflow: 'hidden',
     },
 
@@ -466,7 +466,7 @@ const s = {
         fontFamily: "'Rajdhani',sans-serif",
     },
 
-    // ✅ Cards grid responsif
+    // Cards grid responsif
     cardsGrid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(4,1fr)',
