@@ -35,7 +35,7 @@ export default function ReactorScene({ rodPositions, reactorData, isScrammed, mo
                 target={[0, 0.5, 0]}
             />
 
-            {/* ✅ 2. Ambient disesuaikan agar model tetap terlihat di bg terang */}
+            {/* Ambient disesuaikan agar model tetap terlihat di bg terang */}
             <ambientLight intensity={4.5} color="#e8f0ff" />
 
             {/* Directional lights */}
