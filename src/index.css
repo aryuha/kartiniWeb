@@ -1,0 +1,90 @@
+/* ============================================
+   GLOBAL STYLES - REAKTOR KARTINI SIMULATOR
+   TEMA: LIGHT (Putih Susu)
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Color Palette – Light Theme */
+  --primary:        #0077cc;
+  --primary-dark:   #005599;
+  --secondary:      #00aa55;
+  --danger:         #dd2200;
+  --danger-dark:    #aa1100;
+  --warning:        #cc7700;
+  --background:     #f0f2f5;
+  --surface:        #ffffff;
+  --surface-2:      #f5f7fa;
+  --surface-3:      #eaecf0;
+  --text-primary:   #1a2a3a;
+  --text-secondary: #4a6a8a;
+  --text-muted:     #8aaac0;
+  --border:         #c8d8e8;
+  --border-glow:    rgba(0, 119, 204, 0.2);
+
+  /* Fonts */
+  --font-display: 'Orbitron', monospace;
+  --font-body:    'Rajdhani', sans-serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: #e8edf2; }
+::-webkit-scrollbar-thumb { background: #a0b8cc; border-radius: 2px; }
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px var(--primary); }
+  50%       { box-shadow: 0 0 12px var(--primary); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes scan {
+  0%   { top: -2px; }
+  100% { top: 100vh; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scram-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes cherenkov-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes pulse-btn {
+  0%, 100% { box-shadow: 0 0 12px #0077cc30; }
+  50%       { box-shadow: 0 0 24px #0077cc60; }
+}
