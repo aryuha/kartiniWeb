@@ -4,8 +4,8 @@ import { useLanguage } from '../../context/LanguageContext'
 
 const ROD_COLORS = {
     safety: '#cc2200',
-    shim: '#886600',
-    regulating: '#006633',
+    shim: '#1144cc',
+    regulating: '#22aa44',
 }
 
 const ROD_DATA = {
@@ -32,8 +32,8 @@ export default function RodControl({
     isMoving,
     onStartHold,
     onStopHold,
-    activeUp = false,  // ← NEW: tombol atas aktif via keyboard
-    activeDown = false,  // ← NEW: tombol bawah aktif via keyboard
+    activeUp = false,  
+    activeDown = false,
 }) {
     const { language } = useLanguage()
     const lang = language || 'id'
@@ -93,7 +93,7 @@ export default function RodControl({
         background: isScrammed
             ? '#f5f8fc'
             : activeUp
-                ? baseColor                   // ← Menyala penuh saat keyboard ditekan
+                ? baseColor                   
                 : isMoving
                     ? `${baseColor}22`
                     : `${baseColor}0f`,
@@ -111,7 +111,7 @@ export default function RodControl({
         background: isScrammed
             ? '#f5f8fc'
             : activeDown
-                ? baseColor                   // ← Menyala penuh saat keyboard ditekan
+                ? baseColor                   
                 : isMoving
                     ? `${baseColor}22`
                     : `${baseColor}0f`,

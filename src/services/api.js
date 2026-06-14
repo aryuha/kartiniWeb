@@ -128,7 +128,7 @@ const mockCalculatePower = (rodPositions) => {
     const MAX_KW = 120
     const power_kw = (power / 100) * MAX_KW // Max 120 kW untuk Kartini
 
-    // ← BARU: Cek SCRAM threshold
+    // Cek SCRAM threshold
     const scram_triggered = power_kw >= 110
 
     return {
@@ -143,5 +143,33 @@ const mockCalculatePower = (rodPositions) => {
         temperature: parseFloat((25 + power * 0.5).toFixed(1)),
         rod_positions: rodPositions,
         scram_triggered, // ← BARU
+    }
+}
+
+// ============================================
+// Skor fronted ke api untuk menyimpan hasil permainan
+// ============================================
+export const saveScore = async (scoreData) => {
+    try {
+        const response = await apiClient.post('/scores/save', {
+            username: scoreData.nickname,
+            score: scoreData.score,
+            completion_time: scoreData.completionTime,
+            scram_count: scoreData.scramCount,
+        })
+        return response
+    } catch (error) {
+        console.warn('[API] Gagal simpan skor:', error.message)
+        return null
+    }
+}
+
+export const getLeaderboard = async () => {
+    try {
+        const response = await apiClient.get('/scores/leaderboard')
+        return response
+    } catch (error) {
+        console.warn('[API] Gagal ambil leaderboard:', error.message)
+        return []
     }
 }

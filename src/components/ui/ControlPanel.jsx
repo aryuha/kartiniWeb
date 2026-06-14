@@ -1,8 +1,13 @@
 // src/components/ui/ControlPanel.jsx
-import React from 'react'
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
+//import icon
+import finishIcon from '../../assets/icon/flags.svg';
+import reloadIcon from '../../assets/icon/reload.svg';
 
 export default function ControlPanel({
+    nickname,
     rodPositions,
     reactorData,
     isScrammed,
@@ -15,13 +20,55 @@ export default function ControlPanel({
     onScramRod,
     onResetScramRod,
     activeKeys,
+    isReactorActive,
+    onPowerToggle,
+    onFinish,
+    canFinish = false,
+    stableSeconds = 0,
+    timeElapsed = 0,
 }) {
     const {
         apiOnline, apiOffline, apiError,
-        interlock, interlockOn, interlockOff,
-        interlockSubOn, interlockSubOff,
-        title, t,
+        title, t, language,
     } = useLanguage()
+
+    const navigate = useNavigate()
+
+    // STATE MODAL KONFIRMASI
+    const [showSelesaiModal, setShowSelesaiModal] = useState(false)
+    // deteksi bahasa
+    const isId = language !== 'en'
+
+    const isPowerOn = isReactorActive ?? false;
+
+    const handlePowerToggle = () => {
+        if (onPowerToggle) onPowerToggle();
+    }
+
+    // HANDLER SELESAI
+    const handleSelesaiClick = () => {
+        setShowSelesaiModal(true)
+    }
+
+    const handleSelesaiConfirm = () => {
+        setShowSelesaiModal(false)
+        if (onFinish) {
+            onFinish()
+        } else { // Panggil callback onFinish jika ada
+            navigate('/skor')
+        }
+    }
+
+    const handleSelesaiCancel = () => {
+        setShowSelesaiModal(false)
+    }
+
+    // ← TAMBAH HANDLER MULAI LAGI (belum difungsikan)
+    const handleMulaiLagi = () => {
+        // Reset semua state simulasi cara paling simple
+        navigate('/', { replace: true })
+        setTimeout(() => navigate('/simulation'), 10)
+    }
 
     const apiColor = {
         connected: '#007744', disconnected: '#886600', error: '#cc2200',
@@ -33,19 +80,192 @@ export default function ControlPanel({
     return (
         <div style={s.panel}>
 
+            {/* ── MODAL KONFIRMASI SELESAI ── */}
+            {showSelesaiModal && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 99999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    backdropFilter: 'blur(4px)',
+                }}
+                    onClick={handleSelesaiCancel}
+                >
+                    <div style={{
+                        position: 'relative',
+                        width: 360,
+                        backgroundColor: '#ffffff',
+                        borderRadius: 12,
+                        padding: '28px 24px',
+                        boxShadow: '0 20px 60px rgba(0,80,160,0.3)',
+                        border: '1px solid #c0d4f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 14,
+                    }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Top accent line */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0,
+                            height: 3,
+                            background: 'linear-gradient(90deg, #0055aa, #0099ff)',
+                            borderRadius: '12px 12px 0 0',
+                        }} />
+
+                        {/* Icon */}
+                        <div style={{
+                            width: 52, height: 52,
+                            borderRadius: '50%',
+                            backgroundColor: '#EEF4FF',
+                            border: '2px solid #c0d4f0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 24,
+                            marginTop: 8,
+                        }}>
+                            <img
+                                src={finishIcon}
+                                alt="Finish"
+                                style={{ width: '35px', height: '35px', objectFit: 'contain' }}
+                            />
+                        </div>
+
+                        {/* Judul */}
+                        <div style={{
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 13, fontWeight: 700,
+                            color: '#0055aa', letterSpacing: 1.5,
+                            textAlign: 'center',
+                        }}>
+                            {isId ? 'AKHIRI SESI SIMULASI?' : 'END SIMULATION SESSION?'}
+                        </div>
+
+                        {/* Pesan */}
+                        <div style={{
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 9,
+                            color: '#445566',
+                            textAlign: 'center',
+                            lineHeight: 1.8,
+                            letterSpacing: 0.5,
+                            padding: '0 8px',
+                        }}>
+                            {isId
+                                ? 'Apakah Anda yakin ingin mengakhiri sesi simulasi ini? Anda akan melihat hasil akhir simulasi.'
+                                : 'Are you sure you want to end this simulation session? You will see the final simulation results.'
+                            }
+                        </div>
+
+                        {/* Tombol Aksi */}
+                        <div style={{
+                            display: 'flex',
+                            gap: 10,
+                            width: '100%',
+                            marginTop: 4,
+                        }}>
+                            {/* Tombol Batal */}
+                            <button
+                                onClick={handleSelesaiCancel}
+                                style={{
+                                    flex: 1,
+                                    padding: '10px 0',
+                                    fontFamily: "'Orbitron',monospace",
+                                    fontSize: 9, fontWeight: 700,
+                                    letterSpacing: 1.5,
+                                    border: '1.5px solid #c0d4f0',
+                                    borderRadius: 6,
+                                    cursor: 'pointer',
+                                    background: '#f0f5fa',
+                                    color: '#4477aa',
+                                    transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.background = '#e0ecf8'
+                                    e.currentTarget.style.transform = 'translateY(-1px)'
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.background = '#f0f5fa'
+                                    e.currentTarget.style.transform = 'translateY(0)'
+                                }}
+                            >
+                                {isId ? 'BATAL' : 'CANCEL'}
+                            </button>
+
+                            {/* Tombol Ya, Selesaikan */}
+                            <button
+                                onClick={handleSelesaiConfirm}
+                                style={{
+                                    flex: 1,
+                                    padding: '10px 0',
+                                    fontFamily: "'Orbitron',monospace",
+                                    fontSize: 9, fontWeight: 700,
+                                    letterSpacing: 1.5,
+                                    border: 'none',
+                                    borderRadius: 6,
+                                    cursor: 'pointer',
+                                    background: 'linear-gradient(135deg, #0055aa, #0099ff)',
+                                    color: '#ffffff',
+                                    boxShadow: '0 4px 14px rgba(0,85,170,0.35)',
+                                    transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.transform = 'translateY(-1px)'
+                                    e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,85,170,0.45)'
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = 'translateY(0)'
+                                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,85,170,0.35)'
+                                }}
+                            >
+                                {isId ? 'YA, SELESAIKAN' : 'YES, COMPLETE'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* ── Header ── */}
             <div style={s.header}>
                 <div style={s.headerRow}>
                     <span style={s.panelTitle}>{title || 'PANEL KONTROL'}</span>
-                    <div style={s.apiRow}>
+
+                    {nickname ? (
                         <div style={{
-                            ...s.dot,
-                            background: apiColor[apiStatus] || '#6699bb',
-                        }} />
-                        <span style={s.apiText}>
-                            {apiLabel[apiStatus] || apiOffline}
-                        </span>
-                    </div>
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            backgroundColor: '#EEF4FF',
+                            border: '1px solid #c0d4f0',
+                            borderRadius: 6, padding: '4px 10px',
+                        }}>
+                            <div style={{
+                                width: 20, height: 20, borderRadius: 4,
+                                backgroundColor: '#0055aa',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontFamily: "'Orbitron',monospace",
+                                fontSize: 9, fontWeight: 700, color: '#ffffff', flexShrink: 0,
+                            }}>
+                                {nickname.charAt(0)}
+                            </div>
+                            <span style={{
+                                fontFamily: "'Orbitron',monospace",
+                                fontSize: 10, fontWeight: 700,
+                                color: '#0055aa', letterSpacing: 1,
+                            }}>
+                                {nickname}
+                            </span>
+                        </div>
+                    ) : (
+                        <div style={s.apiRow}>
+                            <div style={{ ...s.dot, background: apiColor[apiStatus] || '#6699bb' }} />
+                            <span style={s.apiText}>{apiLabel[apiStatus] || apiOffline}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -55,31 +275,17 @@ export default function ControlPanel({
             {/* ── Body ── */}
             <div style={s.body}>
 
-                {/* Interlock Status */}
-                <div style={{
-                    ...s.interlockBox,
-                    borderColor: shiftPressed ? '#00aa55' : '#dd3300',
-                    background: shiftPressed ? '#e8f8ee' : '#fff0ec',
-                }}>
-                    <div style={s.interlockRow}>
-                        <div style={{
-                            ...s.dot,
-                            background: shiftPressed ? '#00aa55' : '#dd3300',
-                        }} />
-                        <span style={{
-                            fontFamily: "'Orbitron',monospace",
-                            fontSize: 11, fontWeight: 700,
-                            color: shiftPressed ? '#007733' : '#bb2200',
-                        }}>
-                            {interlock} {shiftPressed ? interlockOn : interlockOff}
-                        </span>
-                    </div>
-                    <p style={s.interlockSub}>
-                        {shiftPressed ? interlockSubOn : interlockSubOff}
-                    </p>
-                </div>
+                {/* ══════════════════════════════════
+                    TOMBOL POWER ON / POWER OFF
+                ══════════════════════════════════ */}
+                <PowerOnButton
+                    isPowerOn={isPowerOn}
+                    isScrammed={isScrammed}
+                    onToggle={handlePowerToggle}
+                    rodPositions={rodPositions}
+                />
 
-                {/* Last Action */}
+                {/* ── Last Action ── */}
                 {lastAction && (
                     <div style={{
                         ...s.lastAction,
@@ -110,6 +316,7 @@ export default function ControlPanel({
                     activeKeys={activeKeys}
                     onScramRod={onScramRod}
                     onResetScramRod={onResetScramRod}
+                    isPowerOn={isPowerOn}
                 />
 
                 {/* ── Arrow Control Section ── */}
@@ -118,19 +325,533 @@ export default function ControlPanel({
                     scrammedRods={scrammedRods}
                     isScrammed={isScrammed}
                     activeKeys={activeKeys}
-                    shiftPressed={shiftPressed}
+                    shiftPressed={shiftPressed && isPowerOn}
                     movingRods={movingRods}
+                    isPowerOn={isPowerOn}
                 />
 
+                {/* ══════════════════════════════════════
+                TOMBOL SELESAI & MULAI LAGI
+                Di bawah INTERLOCK (sudah ada di ArrowControlSection)
+                ══════════════════════════════════════ */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    paddingTop: 10,
+                    borderTop: '1px solid #e0eaf2',
+                    marginTop: 2,
+                }}>
+
+                    {/* ── Status bar: progress simulasi ── */}
+                    {!canFinish && (
+                        <div style={{
+                            borderRadius: 6,
+                            padding: '8px 10px',
+                            background: isReactorActive
+                                ? 'rgba(234,179,8,0.08)'
+                                : 'rgba(148,163,184,0.08)',
+                            border: `1px solid ${isReactorActive ? '#ca8a04' : '#94a3b8'}`,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 4,
+                        }}>
+                            {/* Baris atas: icon + teks utama */}
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                            }}>
+                                <span style={{ fontSize: 13, flexShrink: 0 }}>
+                                    {isReactorActive ? '⚙️' : '🔒'}
+                                </span>
+                                <span style={{
+                                    fontFamily: "'Orbitron',monospace",
+                                    fontSize: 8,
+                                    fontWeight: 700,
+                                    letterSpacing: 0.5,
+                                    color: isReactorActive ? '#92400e' : '#475569',
+                                    lineHeight: 1.4,
+                                }}>
+                                    {!isReactorActive
+                                        ? (isId
+                                            ? 'Aktifkan reaktor untuk memulai simulasi'
+                                            : 'Activate reactor to start simulation')
+                                        : (isId
+                                            ? 'Stabilkan daya 90–110 kW selama 15 detik'
+                                            : 'Stabilize power 90–110 kW for 15 seconds')
+                                    }
+                                </span>
+                            </div>
+
+                            {/* Progress bar stabil — hanya tampil saat reaktor aktif */}
+                            {isReactorActive && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                    {/* Label progress */}
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                    }}>
+                                        <span style={{
+                                            fontFamily: "'Orbitron',monospace",
+                                            fontSize: 7,
+                                            color: '#92400e',
+                                            letterSpacing: 0.5,
+                                        }}>
+                                            {isId ? 'STABILITAS' : 'STABILITY'}
+                                        </span>
+                                        <span style={{
+                                            fontFamily: "'Orbitron',monospace",
+                                            fontSize: 8,
+                                            fontWeight: 700,
+                                            color: stableSeconds > 0 ? '#16a34a' : '#94a3b8',
+                                        }}>
+                                            {stableSeconds}/15 {isId ? 'dtk' : 'sec'}
+                                        </span>
+                                    </div>
+                                    {/* Track */}
+                                    <div style={{
+                                        height: 5,
+                                        background: '#e2e8f0',
+                                        borderRadius: 3,
+                                        overflow: 'hidden',
+                                    }}>
+                                        <div style={{
+                                            height: '100%',
+                                            width: `${(stableSeconds / 15) * 100}%`,
+                                            background: stableSeconds > 0
+                                                ? 'linear-gradient(90deg, #16a34a, #22c55e)'
+                                                : '#94a3b8',
+                                            borderRadius: 3,
+                                            transition: 'width 0.5s ease',
+                                        }} />
+                                    </div>
+                                    {/* Sisa waktu */}
+                                    <span style={{
+                                        fontFamily: "'Orbitron',monospace",
+                                        fontSize: 7,
+                                        color: timeElapsed > 240
+                                            ? '#cc2200'
+                                            : '#7799bb',
+                                        textAlign: 'right',
+                                        letterSpacing: 0.5,
+                                    }}>
+                                        {isId ? 'SISA' : 'LEFT'}: {Math.floor((300 - timeElapsed) / 60)}:{String((300 - timeElapsed) % 60).padStart(2, '0')}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ── Tombol SELESAI ── */}
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            onClick={canFinish ? handleSelesaiClick : undefined}
+                            style={{
+                                width: '100%',
+                                padding: '11px 0',
+                                fontFamily: "'Orbitron', monospace",
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                letterSpacing: '2px',
+                                border: canFinish ? 'none' : '1.5px solid #c0c8d8',
+                                borderRadius: 6,
+                                cursor: canFinish ? 'pointer' : 'not-allowed',
+                                background: canFinish
+                                    ? 'linear-gradient(135deg, #0055aa, #0099ff)'
+                                    : '#e8ecf0',
+                                color: canFinish ? '#ffffff' : '#99aabb',
+                                boxShadow: canFinish
+                                    ? '0 4px 14px rgba(0,85,170,0.3)'
+                                    : 'none',
+                                transition: 'all 0.3s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '10px',
+                                opacity: canFinish ? 1 : 0.7,
+                                position: 'relative',
+                                overflow: 'hidden',
+                            }}
+                            onMouseEnter={e => {
+                                if (canFinish) {
+                                    e.currentTarget.style.transform = 'translateY(-1px)'
+                                    e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,85,170,0.45)'
+                                }
+                            }}
+                            onMouseLeave={e => {
+                                if (canFinish) {
+                                    e.currentTarget.style.transform = 'translateY(0)'
+                                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,85,170,0.3)'
+                                }
+                            }}
+                        >
+                            {/* Shimmer saat baru unlock */}
+                            {canFinish && (
+                                <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
+                                    animation: 'btnShimmer 2s ease infinite',
+                                    pointerEvents: 'none',
+                                }} />
+                            )}
+
+                            <img
+                                src={finishIcon}
+                                alt="Finish"
+                                style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    objectFit: 'contain',
+                                    opacity: canFinish ? 1 : 0.4,
+                                    filter: canFinish ? 'none' : 'grayscale(1)',
+                                }}
+                            />
+                            <span>
+                                {canFinish
+                                    ? (isId ? 'SELESAI' : 'FINISH')
+                                    : (isId ? '🔒 SELESAI' : '🔒 FINISH')
+                                }
+                            </span>
+                        </button>
+                    </div>
+
+                    {/* ── Tombol MULAI LAGI ── */}
+                    <button
+                        onClick={handleMulaiLagi}
+                        style={{
+                            width: '100%',
+                            padding: '11px 0',
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 10, fontWeight: 700,
+                            letterSpacing: 2,
+                            border: '1.5px solid #c0c8d8',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            background: '#e8ecf0',
+                            color: '#99aabb',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = '#d8dde4'
+                            e.currentTarget.style.color = '#556677'
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = '#e8ecf0'
+                            e.currentTarget.style.color = '#99aabb'
+                        }}
+                    >
+                        <img
+                            src={reloadIcon}
+                            alt="Reload"
+                            style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                        />
+                        <span>{isId ? 'MULAI LAGI' : 'RESTART'}</span>
+                    </button>
+
+                    {/* CSS untuk animasi shimmer */}
+                    <style>{`
+                    @keyframes btnShimmer {
+                    0%   { transform: translateX(-100%); }
+                    60%  { transform: translateX(100%); }
+                    100% { transform: translateX(100%); }
+                    }
+                    `}</style>
+                </div>
             </div>
         </div>
     )
 }
 
-// ─────────────────────────────────────────
+// ════════════════════════════════════════
+// POWER ON BUTTON — Gatekeeper Kontrol
+// ════════════════════════════════════════
+function PowerOnButton({ isPowerOn, isScrammed, onToggle, rodPositions }) {
+    const { language } = useLanguage()
+    const isId = language !== 'en'
+    const [showWarning, setShowWarning] = useState(false)
+    // Saat SCRAM, power otomatis tidak bisa ON
+    const isLocked = isScrammed && isPowerOn
+
+    // ── CEK apakah semua rod sudah 0% ──
+    const allRodsZero =
+        (rodPositions?.safety || 0) === 0 &&
+        (rodPositions?.shim || 0) === 0 &&
+        (rodPositions?.regulating || 0) === 0
+
+    // ── Handle klik tombol ──
+    const handleClick = () => {
+        // Jika mau POWER OFF tapi rod belum 0%
+        if (isPowerOn && !allRodsZero) {
+            setShowWarning(true)
+            return
+        }
+        onToggle()
+    }
+
+    return (
+
+        <>
+            {/* ── WARNING POPUP ── */}
+            {showWarning && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 99999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.45)',
+                    backdropFilter: 'blur(3px)',
+                }}>
+                    <div style={{
+                        position: 'relative',
+                        width: 340,
+                        backgroundColor: '#ffffff',
+                        borderRadius: 10,
+                        padding: '24px 22px',
+                        boxShadow: '0 16px 48px rgba(200,0,0,0.25)',
+                        border: '2px solid #ee4422',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 12,
+                    }}>
+                        {/* Top accent merah */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0,
+                            height: 3,
+                            background: 'linear-gradient(90deg, #cc2200, #ff4422)',
+                            borderRadius: '10px 10px 0 0',
+                        }} />
+
+                        {/* Icon warning */}
+                        <div style={{
+                            width: 48, height: 48,
+                            borderRadius: '50%',
+                            backgroundColor: '#fff0ec',
+                            border: '2px solid #ee4422',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 22,
+                            marginTop: 4,
+                        }}>
+                            ⚠️
+                        </div>
+
+                        {/* Judul */}
+                        <div style={{
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 11, fontWeight: 700,
+                            color: '#cc2200', letterSpacing: 1.5,
+                            textAlign: 'center',
+                        }}>
+                            {isId ? 'PERINGATAN!' : 'WARNING!'}
+                        </div>
+
+                        {/* Pesan */}
+                        <div style={{
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 9,
+                            color: '#445566',
+                            textAlign: 'center',
+                            lineHeight: 1.7,
+                            letterSpacing: 0.5,
+                        }}>
+                            {isId
+                                ? 'Turunkan semua batang kendali ke 0% sebelum mematikan reaktor!'
+                                : 'Lower all control rods to 0% before powering off the reactor!'
+                            }
+                        </div>
+
+                        {/* Info posisi rod saat ini */}
+                        <div style={{
+                            width: '100%',
+                            background: '#fff5f3',
+                            border: '1px solid #ffccbb',
+                            borderRadius: 6,
+                            padding: '8px 12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 4,
+                        }}>
+                            {[
+                                { label: 'SAFETY', val: rodPositions?.safety || 0, color: '#cc2200' },
+                                { label: 'SHIM', val: rodPositions?.shim || 0, color: '#1144cc' },
+                                { label: 'REGULATING', val: rodPositions?.regulating || 0, color: '#22aa44' },
+                            ].map(rod => (
+                                <div key={rod.label} style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}>
+                                    <span style={{
+                                        fontFamily: "'Orbitron',monospace",
+                                        fontSize: 8, fontWeight: 700,
+                                        color: rod.color,
+                                    }}>
+                                        {rod.label}
+                                    </span>
+                                    <span style={{
+                                        fontFamily: "'Orbitron',monospace",
+                                        fontSize: 9, fontWeight: 900,
+                                        color: rod.val > 0 ? '#cc2200' : '#00aa55',
+                                    }}>
+                                        {rod.val.toFixed(1)}%
+                                        {rod.val > 0 ? ' ✗' : ' ✓'}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Tombol OK */}
+                        <button
+                            onClick={() => setShowWarning(false)}
+                            style={{
+                                width: '100%',
+                                padding: '10px 0',
+                                fontFamily: "'Orbitron',monospace",
+                                fontSize: 10, fontWeight: 700,
+                                letterSpacing: 2,
+                                border: 'none',
+                                borderRadius: 6,
+                                cursor: 'pointer',
+                                background: 'linear-gradient(135deg, #cc2200, #ee4422)',
+                                color: '#ffffff',
+                                boxShadow: '0 4px 14px rgba(200,0,0,0.3)',
+                                transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.transform = 'translateY(-1px)'
+                                e.currentTarget.style.boxShadow = '0 6px 18px rgba(200,0,0,0.45)'
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.boxShadow = '0 4px 14px rgba(200,0,0,0.3)'
+                            }}
+                        >
+                            {isId ? 'MENGERTI' : 'Get It'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ── CARD POWER BUTTON ── */}
+            <div style={{
+                borderRadius: 8,
+                border: `2px solid ${isPowerOn ? '#00aa55' : '#c0d0e0'}`,
+                background: isPowerOn ? '#f0fff6' : '#f8fafc',
+                padding: '10px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                transition: 'all 0.3s',
+                boxShadow: isPowerOn
+                    ? '0 0 12px rgba(0,170,85,0.2)'
+                    : 'none',
+            }}>
+                {/* Status Row */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{
+                            width: 12, height: 12,
+                            borderRadius: '50%',
+                            background: isPowerOn ? '#00dd55' : '#c0c8d8',
+                            boxShadow: isPowerOn
+                                ? '0 0 8px #00dd55, 0 0 16px #00dd5566'
+                                : 'none',
+                            flexShrink: 0,
+                            transition: 'all 0.3s',
+                        }} />
+                        <span style={{
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 10, fontWeight: 700,
+                            letterSpacing: 1,
+                            color: isPowerOn ? '#006633' : '#7799bb',
+                            transition: 'color 0.3s',
+                        }}>
+                            {isPowerOn
+                                ? (isId ? 'REAKTOR AKTIF' : 'REACTOR ACTIVE')
+                                : (isId ? 'STANDBY' : 'STANDBY')
+                            }
+                        </span>
+                    </div>
+                </div>
+
+                {/* Tombol POWER */}
+                <button
+                    onClick={handleClick}
+                    style={{
+                        width: '100%',
+                        padding: '10px 0',
+                        fontFamily: "'Orbitron',monospace",
+                        fontSize: 11, fontWeight: 700,
+                        letterSpacing: 2,
+                        border: 'none',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        transition: 'all 0.25s',
+                        color: '#ffffff',
+                        background: isPowerOn
+                            ? 'linear-gradient(135deg, #cc2200, #ee3311)'
+                            : 'linear-gradient(135deg, #005522, #00aa55)',
+                        boxShadow: isPowerOn
+                            ? '0 4px 14px rgba(200,0,0,0.35)'
+                            : '0 4px 14px rgba(0,150,80,0.35)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                    }}
+                    onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'translateY(-1px)'
+                    }}
+                    onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                    }}
+                >
+                    <span style={{ fontSize: 14 }}>⏻</span>
+                    <span>
+                        {isPowerOn ? 'POWER OFF' : 'POWER ON'}
+                    </span>
+                </button>
+
+                {/* Hint text */}
+                <p style={{
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 8,
+                    color: isPowerOn ? '#006633' : '#99aabc',
+                    textAlign: 'center',
+                    margin: 0,
+                    letterSpacing: 0.5,
+                    transition: 'color 0.3s',
+                }}>
+                    {isPowerOn
+                        ? (isId ? 'Semua kontrol reaktor aktif' : 'All reactor controls enabled')
+                        : (isId ? 'Tekan untuk mengaktifkan reaktor' : 'Press to activate reactor controls')
+                    }
+                </p>
+            </div>
+        </>
+    )
+}
+
+// ════════════════════════════════════════
 // SCRAM Section
-// ─────────────────────────────────────────
-function ScramSection({ scrammedRods, activeKeys, onScramRod, onResetScramRod }) {
+// ════════════════════════════════════════
+function ScramSection({ scrammedRods, activeKeys, onScramRod, onResetScramRod, isPowerOn }) {
     const rods = [
         { key: 'safety', label: 'SAFETY', kbd: 'R', activeKey: 'scramSafety' },
         { key: 'shim', label: 'SHIM', kbd: 'T', activeKey: 'scramShim' },
@@ -139,12 +860,10 @@ function ScramSection({ scrammedRods, activeKeys, onScramRod, onResetScramRod })
 
     return (
         <div style={sc.wrap}>
-            {/* Title row */}
             <div style={sc.titleRow}>
                 <span style={sc.title}>SCRAM</span>
             </div>
 
-            {/* Rod columns */}
             <div style={sc.row}>
                 {rods.map(rod => {
                     const isScrammed = scrammedRods?.[rod.key] || false
@@ -152,10 +871,8 @@ function ScramSection({ scrammedRods, activeKeys, onScramRod, onResetScramRod })
 
                     return (
                         <div key={rod.key} style={sc.col}>
-                            {/* Label */}
                             <span style={sc.label}>{rod.label}</span>
 
-                            {/* Tombol SCRAM / Reset */}
                             {isScrammed ? (
                                 <button
                                     style={sc.resetBtn}
@@ -168,29 +885,35 @@ function ScramSection({ scrammedRods, activeKeys, onScramRod, onResetScramRod })
                                 <button
                                     style={{
                                         ...sc.scramBtn,
-                                        backgroundColor: isActive ? '#ff0000' : '#cc2200',
-                                        boxShadow: isActive
-                                            ? '0 0 14px #ff0000, 0 0 28px #ff000055'
-                                            : '0 2px 6px rgba(180,0,0,0.35)',
+                                        backgroundColor: !isPowerOn
+                                            ? '#e0e0e0'
+                                            : isActive ? '#ff0000' : '#cc2200',
+                                        boxShadow: !isPowerOn
+                                            ? 'none'
+                                            : isActive
+                                                ? '0 0 14px #ff0000, 0 0 28px #ff000055'
+                                                : '0 2px 6px rgba(180,0,0,0.35)',
                                         transform: isActive ? 'scale(0.90)' : 'scale(1)',
+                                        cursor: isPowerOn ? 'pointer' : 'not-allowed',
+                                        opacity: isPowerOn ? 1 : 0.5,
                                     }}
-                                    onMouseDown={() => onScramRod?.(rod.key)}
-                                    title={`SCRAM ${rod.label}`}
+                                    onMouseDown={() => isPowerOn && onScramRod?.(rod.key)}
+                                    title={isPowerOn
+                                        ? `SCRAM ${rod.label}`
+                                        : 'Aktifkan Power ON terlebih dahulu'
+                                    }
                                 >
-                                    {/* kotak solid */}
                                     <span style={sc.scramIcon}>■</span>
                                 </button>
                             )}
 
-                            {/* Keyboard badge */}
                             <div style={{
                                 ...sc.kbdBadge,
                                 borderColor: isScrammed ? '#aabbcc' : '#cc2200',
                                 color: isScrammed ? '#aabbcc' : '#cc2200',
                                 background: isScrammed ? '#f0f0f0' : '#fff0ec',
-                                boxShadow: isActive
-                                    ? '0 0 8px #ff000066'
-                                    : 'none',
+                                boxShadow: isActive ? '0 0 8px #ff000066' : 'none',
+                                opacity: isPowerOn ? 1 : 0.45,
                             }}>
                                 {rod.kbd}
                             </div>
@@ -202,9 +925,9 @@ function ScramSection({ scrammedRods, activeKeys, onScramRod, onResetScramRod })
     )
 }
 
-// ─────────────────────────────────────────
-// Arrow Control Section (tanpa tombol mouse)
-// ─────────────────────────────────────────
+// ════════════════════════════════════════
+// Arrow Control Section
+// ════════════════════════════════════════
 function ArrowControlSection({
     rodPositions,
     scrammedRods,
@@ -212,41 +935,32 @@ function ArrowControlSection({
     activeKeys,
     shiftPressed,
     movingRods,
+    isPowerOn,
 }) {
     const { t } = useLanguage()
+
     const rods = [
         {
-            key: 'safety',
-            label: 'SAFETY',
-            upKey: 'safetyUp',
-            downKey: 'safetyDown',
-            kbdUp: 'Q',
-            kbdDown: 'A',
-            color: '#cc2200',
+            key: 'safety', label: 'SAFETY',
+            upKey: 'safetyUp', downKey: 'safetyDown',
+            kbdUp: 'Q', kbdDown: 'A', color: '#cc2200',
         },
         {
-            key: 'shim',
-            label: 'SHIM',
-            upKey: 'shimUp',
-            downKey: 'shimDown',
-            kbdUp: 'W',
-            kbdDown: 'S',
-            color: '#886600',
+            key: 'shim', label: 'SHIM',
+            upKey: 'shimUp', downKey: 'shimDown',
+            kbdUp: 'W', kbdDown: 'S', color: '#1144cc',
         },
         {
-            key: 'regulating',
-            label: 'REGULATING',
-            upKey: 'regUp',
-            downKey: 'regDown',
-            kbdUp: 'E',
-            kbdDown: 'D',
-            color: '#006633',
+            key: 'regulating', label: 'REGULATING',
+            upKey: 'regUp', downKey: 'regDown',
+            kbdUp: 'E', kbdDown: 'D', color: '#22aa44',
         },
     ]
 
     return (
         <div style={ar.wrap}>
-            {/* ── Header kolom ── */}
+
+            {/* Header kolom */}
             <div style={ar.headerRow}>
                 <div style={ar.emptyCell} />
                 {rods.map(rod => (
@@ -254,7 +968,6 @@ function ArrowControlSection({
                         <span style={{ ...ar.colLabel, color: rod.color }}>
                             {rod.label}
                         </span>
-                        {/* Posisi % */}
                         <span style={{ ...ar.colPct, color: rod.color }}>
                             {(isScrammed || scrammedRods?.[rod.key]
                                 ? 0
@@ -265,7 +978,7 @@ function ArrowControlSection({
                 ))}
             </div>
 
-            {/* ── Progress bar row ── */}
+            {/* Progress bar */}
             <div style={ar.barRow}>
                 <div style={ar.emptyCell} />
                 {rods.map(rod => {
@@ -290,7 +1003,7 @@ function ArrowControlSection({
                 })}
             </div>
 
-            {/* ── Tombol ATAS ── */}
+            {/* Tombol ATAS */}
             <div style={ar.btnRow}>
                 <div style={ar.rowLabel}>
                     <span style={ar.rowLabelText}>▲</span>
@@ -298,13 +1011,14 @@ function ArrowControlSection({
                 {rods.map(rod => {
                     const isActive = activeKeys?.[rod.upKey] || false
                     const isScrm = scrammedRods?.[rod.key] || isScrammed
-
+                    // ← disabled juga saat Power OFF
+                    const isDisabled = isScrm || !isPowerOn
                     return (
                         <div key={rod.key} style={ar.btnCell}>
                             <ArrowBtn
                                 direction="up"
-                                isActive={isActive}
-                                isDisabled={isScrm}
+                                isActive={isActive && isPowerOn}
+                                isDisabled={isDisabled}
                                 color={rod.color}
                                 kbdHint={`Shift+${rod.kbdUp}`}
                             />
@@ -313,7 +1027,7 @@ function ArrowControlSection({
                 })}
             </div>
 
-            {/* ── Tombol BAWAH ── */}
+            {/* Tombol BAWAH */}
             <div style={ar.btnRow}>
                 <div style={ar.rowLabel}>
                     <span style={ar.rowLabelText}>▼</span>
@@ -321,13 +1035,13 @@ function ArrowControlSection({
                 {rods.map(rod => {
                     const isActive = activeKeys?.[rod.downKey] || false
                     const isScrm = scrammedRods?.[rod.key] || isScrammed
-
+                    const isDisabled = isScrm || !isPowerOn
                     return (
                         <div key={rod.key} style={ar.btnCell}>
                             <ArrowBtn
                                 direction="down"
-                                isActive={isActive}
-                                isDisabled={isScrm}
+                                isActive={isActive && isPowerOn}
+                                isDisabled={isDisabled}
                                 color={rod.color}
                                 kbdHint={`Shift+${rod.kbdDown}`}
                             />
@@ -336,106 +1050,122 @@ function ArrowControlSection({
                 })}
             </div>
 
-            {/* ── INTERLOCK indicator ── */}
-            <div style={ar.interlockRow}>
-                <span style={ar.interlockLabel}>INTERLOCK</span>
-                <div style={{
-                    ...ar.interlockLed,
-                    backgroundColor: shiftPressed ? '#00dd55' : '#ffdd00',
-                    boxShadow: shiftPressed
-                        ? '0 0 10px #00dd55, 0 0 20px #00dd5566'
-                        : '0 0 10px #ffdd00, 0 0 20px #ffdd0066',
-                }} />
+            {/* ── Power Status Footer ── */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+
+                gap: 8,
+                paddingTop: 4,
+                borderTop: '1px solid #e0eaf2',
+                marginTop: 2,
+            }}>
                 <span style={{
-                    ...ar.interlockStatus,
-                    color: shiftPressed ? '#007733' : '#886600',
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 8, fontWeight: 700,
+                    color: '#7799bb', letterSpacing: 1,
                 }}>
-                    {shiftPressed ? t('interlockOn') : t('interlockOff')}
+                    INTERLOCK
+                </span>
+
+                {/* Indikator LED + Status */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                }}></div>
+
+                {/* LED dot */}
+                <div style={{
+                    width: 10, height: 10,
+                    borderRadius: '50%',
+                    backgroundColor: shiftPressed ? '#ffdd00' : '#c0c8d8',
+                    boxShadow: shiftPressed
+                        ? '0 0 8px #ffdd00, 0 0 16px #ffdd0066'
+                        : 'none',
+                    flexShrink: 0,
+                    transition: 'all 0.15s',
+                }} />
+
+                {/* Label ON/OFF */}
+                <span style={{
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 8, fontWeight: 700,
+                    letterSpacing: 0.5,
+                    color: shiftPressed ? '#886600' : '#8899aa',
+                    transition: 'color 0.15s',
+                }}>
+                    {shiftPressed ? 'ON' : 'OFF'}
                 </span>
             </div>
-
         </div>
     )
 }
 
-// ─────────────────────────────────────────
-// Arrow Button - hanya visual (no onClick)
-// ─────────────────────────────────────────
+// ════════════════════════════════════════
+// Arrow Button
+// ════════════════════════════════════════
 function ArrowBtn({ direction, isActive, isDisabled, color, kbdHint }) {
     const isUp = direction === 'up'
-
-    // Warna aktif: merah untuk naik, hijau untuk turun (sesuai gambar)
     const activeColor = isUp ? '#dd2200' : '#22aa44'
     const idleColor = isUp ? '#cc220033' : '#22aa4433'
     const borderActive = isUp ? '#ff4422' : '#44cc66'
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-            {/* Tombol panah */}
             <div style={{
                 width: 52, height: 44,
                 borderRadius: 6,
                 border: `2px solid ${isDisabled
                     ? '#c0c8d0'
-                    : isActive
-                        ? borderActive
-                        : `${color}66`
+                    : isActive ? borderActive : `${color}66`
                     }`,
                 background: isDisabled
                     ? '#e8ecf0'
-                    : isActive
-                        ? activeColor
-                        : idleColor,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                    : isActive ? activeColor : idleColor,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.1s',
                 boxShadow: isActive && !isDisabled
                     ? `0 0 12px ${activeColor}99, 0 0 24px ${activeColor}44`
                     : 'none',
                 transform: isActive ? 'scale(0.93)' : 'scale(1)',
                 userSelect: 'none',
+                cursor: isDisabled ? 'not-allowed' : 'default',
             }}>
-                {/* Segitiga panah */}
                 <div style={{
                     width: 0, height: 0,
                     borderLeft: '12px solid transparent',
                     borderRight: '12px solid transparent',
-                    ...(isUp
-                        ? {
-                            borderBottom: `18px solid ${isDisabled ? '#a0a8b0' : isActive ? '#ffffff' : `${color}cc`
-                                }`,
-                        }
-                        : {
-                            borderTop: `18px solid ${isDisabled ? '#a0a8b0' : isActive ? '#ffffff' : `${color}cc`
-                                }`,
-                        }
-                    ),
+                    ...(isUp ? {
+                        borderBottom: `18px solid ${isDisabled ? '#a0a8b0'
+                            : isActive ? '#ffffff'
+                                : `${color}cc`
+                            }`,
+                    } : {
+                        borderTop: `18px solid ${isDisabled ? '#a0a8b0'
+                            : isActive ? '#ffffff'
+                                : `${color}cc`
+                            }`,
+                    }),
                     filter: isActive && !isDisabled ? 'drop-shadow(0 0 4px #ffffff88)' : 'none',
                     transition: 'all 0.1s',
                 }} />
             </div>
 
-            {/* Keyboard hint */}
             <kbd style={{
                 fontFamily: "'Orbitron',monospace",
                 fontSize: 7, fontWeight: isActive ? 900 : 400,
                 padding: '2px 4px',
                 border: `1px solid ${isDisabled
                     ? '#c0c8d0'
-                    : isActive
-                        ? color
-                        : `${color}66`
+                    : isActive ? color : `${color}66`
                     }`,
                 borderRadius: 3,
-                color: isDisabled
-                    ? '#a0a8b0'
-                    : isActive ? color : `${color}88`,
-                background: isActive && !isDisabled
-                    ? `${color}22`
-                    : 'transparent',
+                color: isDisabled ? '#a0a8b0' : isActive ? color : `${color}88`,
+                background: isActive && !isDisabled ? `${color}22` : 'transparent',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.1s',
+                opacity: isDisabled ? 0.5 : 1,
             }}>
                 {kbdHint}
             </kbd>
@@ -443,44 +1173,25 @@ function ArrowBtn({ direction, isActive, isDisabled, color, kbdHint }) {
     )
 }
 
-// ─────────────────────────────────────────
-// Styles
-// ─────────────────────────────────────────
-
-// SCRAM section styles
+// ════════════════════════════════════════
+// STYLES
+// ════════════════════════════════════════
 const sc = {
     wrap: {
-        border: '1px solid #ee4422',
-        borderRadius: 6,
-        padding: '8px 10px',
-        background: '#fff5f3',
+        border: '1px solid #ee4422', borderRadius: 6,
+        padding: '8px 10px', background: '#fff5f3',
     },
     titleRow: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 8,
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', marginBottom: 8,
     },
     title: {
         fontFamily: "'Orbitron',monospace",
         fontSize: 11, fontWeight: 700,
         color: '#cc2200', letterSpacing: 1,
     },
-    hint: {
-        fontSize: 9, color: '#aa6655', fontStyle: 'italic',
-    },
-    row: {
-        display: 'flex',
-        justifyContent: 'space-around',
-        gap: 6,
-    },
-    col: {
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 5,
-    },
+    row: { display: 'flex', justifyContent: 'space-around', gap: 6 },
+    col: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 },
     label: {
         fontFamily: "'Orbitron',monospace",
         fontSize: 8, fontWeight: 700,
@@ -488,143 +1199,68 @@ const sc = {
     },
     scramBtn: {
         width: 40, height: 40,
-        border: '2px solid #ff0000',
-        borderRadius: 4,
+        border: '2px solid #ff0000', borderRadius: 4,
         cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.1s',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
+        userSelect: 'none', WebkitUserSelect: 'none',
     },
-    scramIcon: {
-        fontSize: 16, color: '#ffffff', lineHeight: 1,
-    },
+    scramIcon: { fontSize: 16, color: '#ffffff', lineHeight: 1 },
     resetBtn: {
         width: 40, height: 40,
-        border: '2px solid #00aa55',
-        borderRadius: 4,
-        cursor: 'pointer',
-        background: '#e8f8ee',
-        color: '#007733',
-        fontSize: 18,
+        border: '2px solid #00aa55', borderRadius: 4,
+        cursor: 'pointer', background: '#e8f8ee',
+        color: '#007733', fontSize: 18,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.1s',
-        userSelect: 'none',
+        transition: 'all 0.1s', userSelect: 'none',
     },
     kbdBadge: {
         fontFamily: "'Orbitron',monospace",
         fontSize: 9, fontWeight: 700,
-        padding: '2px 8px',
-        border: '1px solid',
-        borderRadius: 3,
-        transition: 'all 0.1s',
+        padding: '2px 8px', border: '1px solid',
+        borderRadius: 3, transition: 'all 0.1s',
     },
 }
 
-// Arrow control styles
 const ar = {
     wrap: {
-        border: '1px solid #c8d8e8',
-        borderRadius: 8,
-        padding: '10px 10px',
-        background: '#ffffff',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
+        border: '1px solid #c8d8e8', borderRadius: 8,
+        padding: '10px 10px', background: '#ffffff',
+        display: 'flex', flexDirection: 'column', gap: 8,
     },
-    headerRow: {
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: 4,
-    },
-    emptyCell: {
-        width: 28, flexShrink: 0,
-    },
+    headerRow: { display: 'flex', alignItems: 'flex-end', gap: 4 },
+    emptyCell: { width: 28, flexShrink: 0 },
     colHeader: {
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 2,
+        flex: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', gap: 2,
     },
     colLabel: {
         fontFamily: "'Orbitron',monospace",
-        fontSize: 8, fontWeight: 700,
-        letterSpacing: 0.5,
+        fontSize: 8, fontWeight: 700, letterSpacing: 0.5,
     },
-    colPct: {
-        fontFamily: "'Orbitron',monospace",
-        fontSize: 11, fontWeight: 900,
-    },
-    barRow: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-    },
-    barWrap: {
-        flex: 1,
-    },
+    colPct: { fontFamily: "'Orbitron',monospace", fontSize: 11, fontWeight: 900 },
+    barRow: { display: 'flex', alignItems: 'center', gap: 4 },
+    barWrap: { flex: 1 },
     barTrack: {
-        height: 6,
-        background: '#eef2f6',
-        borderRadius: 3,
-        border: '1px solid #d0dce8',
-        overflow: 'hidden',
+        height: 6, background: '#eef2f6', borderRadius: 3,
+        border: '1px solid #d0dce8', overflow: 'hidden',
     },
     barFill: {
-        height: '100%',
-        borderRadius: 3,
-        transition: 'width 0.15s ease, background 0.15s ease',
-        minWidth: 0,
+        height: '100%', borderRadius: 3,
+        transition: 'width 0.15s ease, background 0.15s ease', minWidth: 0,
     },
-    btnRow: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-    },
+    btnRow: { display: 'flex', alignItems: 'center', gap: 4 },
     rowLabel: {
         width: 28, flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
     },
     rowLabelText: {
         fontFamily: "'Orbitron',monospace",
         fontSize: 12, color: '#7799bb', fontWeight: 700,
     },
-    btnCell: {
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
-    },
-    interlockRow: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        paddingTop: 4,
-        borderTop: '1px solid #e0eaf2',
-        marginTop: 2,
-    },
-    interlockLabel: {
-        fontFamily: "'Orbitron',monospace",
-        fontSize: 8, fontWeight: 700,
-        color: '#7799bb', letterSpacing: 1,
-    },
-    interlockLed: {
-        width: 14, height: 14,
-        borderRadius: '50%',
-        flexShrink: 0,
-        transition: 'all 0.2s',
-    },
-    interlockStatus: {
-        fontFamily: "'Orbitron',monospace",
-        fontSize: 8, fontWeight: 700,
-        letterSpacing: 0.5,
-        transition: 'color 0.2s',
-    },
+    btnCell: { flex: 1, display: 'flex', justifyContent: 'center' },
 }
 
-// Main panel styles
 const s = {
     panel: {
         width: 300, height: '100%',
@@ -636,16 +1272,8 @@ const s = {
         fontFamily: "'Rajdhani',sans-serif",
         flexShrink: 0,
     },
-    header: {
-        padding: '12px 14px 10px',
-        background: '#ffffff',
-        flexShrink: 0,
-    },
-    headerRow: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
+    header: { padding: '12px 14px 10px', background: '#ffffff', flexShrink: 0 },
+    headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
     blueLine: {
         height: 2,
         background: 'linear-gradient(90deg, #0055aa, #0099ff)',
@@ -656,41 +1284,18 @@ const s = {
         fontSize: 13, fontWeight: 700,
         color: '#0055aa', letterSpacing: 2,
     },
-    apiRow: {
-        display: 'flex', alignItems: 'center', gap: 5,
-    },
+    apiRow: { display: 'flex', alignItems: 'center', gap: 5 },
     apiText: {
         fontFamily: "'Orbitron',monospace",
         fontSize: 9, color: '#7799bb', letterSpacing: 1,
     },
-    dot: {
-        width: 8, height: 8,
-        borderRadius: '50%', flexShrink: 0,
-    },
+    dot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
     body: {
         flex: 1, overflowY: 'auto', overflowX: 'hidden',
-        minHeight: 0,
-        padding: '10px 12px',
-        display: 'flex', flexDirection: 'column',
-        gap: 9,
-    },
-    interlockBox: {
-        border: '1px solid',
-        borderRadius: 6,
-        padding: '9px 12px',
-        display: 'flex', flexDirection: 'column',
-        gap: 4, transition: 'all 0.2s',
-    },
-    interlockRow: {
-        display: 'flex', alignItems: 'center', gap: 8,
-    },
-    interlockSub: {
-        fontSize: 11, color: '#5a7a9a',
-        margin: 0, paddingLeft: 16,
+        minHeight: 0, padding: '10px 12px',
+        display: 'flex', flexDirection: 'column', gap: 9,
     },
     lastAction: {
-        border: '1px solid',
-        borderRadius: 4,
-        padding: '6px 10px',
+        border: '1px solid', borderRadius: 4, padding: '6px 10px',
     },
 }

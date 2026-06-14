@@ -1,6 +1,6 @@
 // src/components/pages/SimulationPage.jsx
 import React, { useCallback, useEffect, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import ReactorScene from '../three/ReactorScene'
 import ControlPanel from '../ui/ControlPanel'
 import PowerDisplay from '../ui/PowerDisplay'
@@ -8,7 +8,365 @@ import LanguageSwitcher from '../ui/LanguageSwitcher'
 import { useControlRods } from '../../hooks/useControlRods'
 import { useKeyboardControl } from '../../hooks/useKeyboardControl'
 import { useReactorAPI } from '../../hooks/useReactorAPI'
+import { useScoringSystem } from '../../hooks/useScoringSystem'
 import { useLanguage } from '../../context/LanguageContext'
+//import icon
+import profilIcon from '../../assets/icon/profil.svg';
+
+
+// ══════════════════════════════════════════
+// Nickname Modal
+// ══════════════════════════════════════════
+function NicknameModal({ onSubmit }) {
+    const [nickname, setNickname] = useState('')
+    const [error, setError] = useState('')
+    const { t } = useLanguage()
+
+    const handleSubmit = () => {
+        const trimmed = nickname.trim()
+        if (trimmed.length === 0) {
+            setError(t('nicknameEmpty') || 'Nickname tidak boleh kosong!')
+            return
+        }
+        onSubmit(trimmed.toUpperCase())
+    }
+
+    const handleKeyDown = (e) => {
+        // Cegah event keyboard menyebar ke window
+        e.stopPropagation()
+        if (e.key === 'Enter') handleSubmit()
+    }
+
+    const handleChange = (e) => {
+        const val = e.target.value
+        if (val.length <= 5) {
+            setNickname(val)
+            setError('')
+        }
+    }
+
+    return (
+        <div
+            // onKeyDown di level modal untuk stopPropagation
+            onKeyDown={e => e.stopPropagation()}
+            onKeyUp={e => e.stopPropagation()}
+            style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.35)',
+                backdropFilter: 'blur(3px)',
+            }}
+        >
+            <div style={{
+                position: 'relative',
+                width: 360,
+                backgroundColor: 'rgba(255,255,255,0.92)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(200,216,232,0.8)',
+                borderRadius: 12,
+                padding: '28px 24px',
+                boxShadow: '0 20px 60px rgba(0,80,160,0.25)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 14,
+            }}>
+
+                {/* Top Accent Line */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0,
+                    height: 3,
+                    background: 'linear-gradient(90deg, #0055aa, #0099ff)',
+                    borderRadius: '12px 12px 0 0',
+                }} />
+
+                {/* Icon */}
+                <div style={{
+                    width: 52, height: 52,
+                    borderRadius: 12,
+                    backgroundColor: '#EEF4FF',
+                    border: '1.5px solid #c0d4f0',
+                    display: 'flex', alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 22,
+                    marginTop: 8,
+                }}>
+                    <img
+                        src={profilIcon}
+                        alt="Profil"
+                        style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                    />
+                </div>
+
+                {/* Title */}
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        fontFamily: "'Orbitron',monospace",
+                        fontSize: 12, fontWeight: 700,
+                        color: '#0055aa', letterSpacing: 2,
+                        marginBottom: 4,
+                    }}>
+                        {t('nicknameTitle')}
+                    </div>
+                    <div style={{
+                        fontFamily: "'Orbitron',monospace",
+                        fontSize: 8, color: '#7799bb',
+                        letterSpacing: 1,
+                    }}>
+                        {t('nicknameSubtitle')}
+                    </div>
+                </div>
+
+                {/* Input */}
+                <div style={{ width: '100%' }}>
+                    <input
+                        type="text"
+                        value={nickname}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        onKeyUp={e => e.stopPropagation()}
+                        maxLength={5}
+                        autoFocus
+                        placeholder="_ _ _ _ _"
+                        style={{
+                            width: '100%',
+                            padding: '12px',
+                            fontSize: 26,
+                            fontWeight: 800,
+                            fontFamily: "'Orbitron',monospace",
+                            letterSpacing: 10,
+                            textAlign: 'center',
+                            textTransform: 'uppercase',
+                            color: '#0055aa',
+                            backgroundColor: '#f0f5fa',
+                            border: error
+                                ? '2px solid #cc2200'
+                                : '2px solid #c0d4f0',
+                            borderRadius: 8,
+                            outline: 'none',
+                            transition: 'border-color 0.2s',
+                            boxSizing: 'border-box',
+                            caretColor: '#0055aa',
+                        }}
+                        onFocus={e => {
+                            e.currentTarget.style.borderColor = '#0077cc'
+                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,119,204,0.15)'
+                        }}
+                        onBlur={e => {
+                            e.currentTarget.style.borderColor = error ? '#cc2200' : '#c0d4f0'
+                            e.currentTarget.style.boxShadow = 'none'
+                        }}
+                    />
+
+                    {/* Counter & Error */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginTop: 5,
+                    }}>
+                        <span style={{
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 8, color: '#cc2200',
+                        }}>
+                            {error}
+                        </span>
+                        <span style={{
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 8,
+                            color: nickname.length >= 5 ? '#cc8800' : '#7799bb',
+                        }}>
+                            {nickname.length}/5
+                        </span>
+                    </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                    onClick={handleSubmit}
+                    disabled={nickname.trim().length === 0}
+                    style={{
+                        width: '100%',
+                        padding: '11px',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: 3,
+                        fontFamily: "'Orbitron',monospace",
+                        color: '#ffffff',
+                        backgroundColor: nickname.trim().length > 0
+                            ? '#0055aa'
+                            : '#99aabb',
+                        border: 'none',
+                        borderRadius: 8,
+                        cursor: nickname.trim().length > 0 ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s',
+                        boxShadow: nickname.trim().length > 0
+                            ? '0 4px 12px rgba(0,85,170,0.3)'
+                            : 'none',
+                    }}
+                    onMouseEnter={e => {
+                        if (nickname.trim().length > 0) {
+                            e.currentTarget.style.backgroundColor = '#0044aa'
+                            e.currentTarget.style.transform = 'translateY(-1px)'
+                        }
+                    }}
+                    onMouseLeave={e => {
+                        if (nickname.trim().length > 0) {
+                            e.currentTarget.style.backgroundColor = '#0055aa'
+                            e.currentTarget.style.transform = 'translateY(0)'
+                        }
+                    }}
+                >
+                    {t('btnMulai')}
+                </button>
+
+                {/* Hint */}
+                <div style={{
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 7, color: '#aabbcc',
+                    letterSpacing: 1, textAlign: 'center',
+                }}>
+                    {t('nicknameHint')}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function NicknameInput({ onSubmit }) {
+    const [nickname, setNickname] = useState('')
+    const [error, setError] = useState('')
+    const { t } = useLanguage()
+
+    const handleSubmit = () => {
+        const trimmed = nickname.trim()
+        if (trimmed.length === 0) {
+            setError('Nickname tidak boleh kosong!')
+            return
+        }
+        onSubmit(trimmed.toUpperCase())
+    }
+
+    const handleKeyDown = (e) => {
+        e.stopPropagation()
+        if (e.key === 'Enter') handleSubmit()
+    }
+
+    const handleChange = (e) => {
+        const val = e.target.value
+        if (val.length <= 5) {
+            setNickname(val)
+            setError('')
+        }
+    }
+
+    return (
+        <div style={{ width: '100%' }}>
+            {/* Input Field */}
+            <input
+                type="text"
+                value={nickname}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                onKeyUp={e => e.stopPropagation()}
+                maxLength={5}
+                autoFocus
+                placeholder="_ _ _ _ _"
+                style={{
+                    width: '100%',
+                    padding: '12px',
+                    fontSize: 26,
+                    fontWeight: 800,
+                    fontFamily: "'Orbitron',monospace",
+                    letterSpacing: 10,
+                    textAlign: 'center',
+                    textTransform: 'uppercase',
+                    color: '#0055aa',
+                    backgroundColor: '#f0f5fa',
+                    border: error ? '2px solid #cc2200' : '2px solid #c0d4f0',
+                    borderRadius: 8,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    caretColor: '#0055aa',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                }}
+                onFocus={e => {
+                    e.currentTarget.style.borderColor = '#0077cc'
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,119,204,0.15)'
+                }}
+                onBlur={e => {
+                    e.currentTarget.style.borderColor = error ? '#cc2200' : '#c0d4f0'
+                    e.currentTarget.style.boxShadow = 'none'
+                }}
+            />
+
+            {/* Counter & Error Row */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: 5, paddingInline: 2,
+            }}>
+                <span style={{
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 8, color: '#cc2200',
+                }}>
+                    {error}
+                </span>
+                <span style={{
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 8,
+                    color: nickname.length >= 5 ? '#cc8800' : '#7799bb',
+                }}>
+                    {nickname.length}/5
+                </span>
+            </div>
+
+            {/* Submit Button */}
+            <button
+                onClick={handleSubmit}
+                disabled={nickname.trim().length === 0}
+                style={{
+                    width: '100%',
+                    marginTop: 12,
+                    padding: '11px',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: 3,
+                    fontFamily: "'Orbitron',monospace",
+                    color: '#ffffff',
+                    backgroundColor: nickname.trim().length > 0 ? '#0055aa' : '#99aabb',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: nickname.trim().length > 0 ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s',
+                    boxShadow: nickname.trim().length > 0
+                        ? '0 4px 12px rgba(0,85,170,0.3)'
+                        : 'none',
+                }}
+                onMouseEnter={e => {
+                    if (nickname.trim().length > 0) {
+                        e.currentTarget.style.backgroundColor = '#0044aa'
+                        e.currentTarget.style.transform = 'translateY(-1px)'
+                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,85,170,0.4)'
+                    }
+                }}
+                onMouseLeave={e => {
+                    if (nickname.trim().length > 0) {
+                        e.currentTarget.style.backgroundColor = '#0055aa'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,85,170,0.3)'
+                    }
+                }}
+            >
+                {t('btnMulai')}
+            </button>
+        </div>
+    )
+}
 
 // ══════════════════════════════════════════
 // Header Bar
@@ -68,7 +426,7 @@ function HeaderBar({ onHome, reactorData, isScrammed }) {
 
                 <div style={hb.divider} />
 
-                {/* ── DAYA: ubah tampilan ke kW ── */}
+                {/* ── DAYA: tampilan kW ── */}
                 <div style={hb.metricGroup}>
                     <span style={hb.metricLabel}>{labelDaya || 'DAYA'}</span>
                     {/* Baris nilai kW + satuan */}
@@ -223,7 +581,7 @@ const hb = {
 // ══════════════════════════════════════════
 // LEFT PANEL — Monitor + Panduan + Rod Bar
 // ══════════════════════════════════════════
-function LeftPanel({ rodPositions, reactorData, isScrammed, isVisible, onToggle }) {
+function LeftPanel({ rodPositions, reactorData, isScrammed, isVisible, onToggle, isReactorActive }) {
     const { t, rodSafety, rodShim, rodReg, guideTitle, guideRows, noteTitle, notes } = useLanguage()
     const [activeTab, setActiveTab] = useState('monitor')
 
@@ -241,13 +599,13 @@ function LeftPanel({ rodPositions, reactorData, isScrammed, isVisible, onToggle 
     }
 
     return (
-        // ✅ Wrapper relatif — hanya untuk posisi toggle button
+        // Wrapper relatif — hanya untuk posisi toggle button
         <div style={{ position: 'relative', display: 'flex', height: '100%' }}>
 
-            {/* ✅ Panel — width berubah saat hide/show */}
+            {/* Panel — width berubah saat hide/show */}
             <div style={{
                 ...lp.panel,
-                width: isVisible ? 276 : 0,        // ✅ width collapse ke 0
+                width: isVisible ? 276 : 0,
                 borderRight: isVisible ? '1px solid #d0dce8' : 'none',
             }}>
                 {/* Semua konten hanya render saat visible agar tidak ada overflow */}
@@ -272,7 +630,7 @@ function LeftPanel({ rodPositions, reactorData, isScrammed, isVisible, onToggle 
                         {/* Body */}
                         <div style={lp.body}>
                             {activeTab === 'monitor' && (
-                                <PowerDisplay reactorData={reactorData} isScrammed={isScrammed} />
+                                <PowerDisplay reactorData={reactorData} isScrammed={isScrammed} isReactorActive={isReactorActive} />
                             )}
                             {activeTab === 'panduan' && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -336,11 +694,10 @@ function LeftPanel({ rodPositions, reactorData, isScrammed, isVisible, onToggle 
                 )}
             </div>
 
-            {/* ✅ Toggle button — posisi ikut width panel */}
+            {/* Toggle button — posisi ikut width panel */}
             <button
                 style={{
                     ...lp.toggleBtn,
-                    // Selalu di tepi kanan panel
                     position: 'absolute',
                     left: isVisible ? 276 : 0,
                     top: '50%',
@@ -426,56 +783,422 @@ function LoadingOverlay({ show }) {
     )
 }
 
+// Komponen notifikasi penalti
+function PenaltyNotif({ notif }) {
+    const [visible, setVisible] = useState(true)
+
+    useEffect(() => {
+        const t = setTimeout(() => setVisible(false), 2000)
+        return () => clearTimeout(t)
+    }, [])
+
+    if (!visible) return null
+
+    const isScram = notif.type === 'scram'
+    const isPenalty = notif.type === 'penalty'
+
+    return (
+        <div style={{
+            position: 'absolute',
+            top: '20%', left: '50%',
+            transform: 'translateX(-50%)',
+            background: isScram ? 'rgba(200,0,0,0.9)'
+                : isPenalty ? 'rgba(180,60,0,0.88)'
+                    : 'rgba(0,140,70,0.88)',
+            color: '#fff',
+            borderRadius: 8,
+            padding: '10px 24px',
+            fontFamily: "'Orbitron',monospace",
+            fontSize: 13, fontWeight: 700,
+            letterSpacing: 1,
+            pointerEvents: 'none',
+            zIndex: 50,
+            animation: 'fadeInUp 0.3s ease',
+        }}>
+            {notif.text}
+        </div>
+    )
+}
+
+function WinOverlay({ isWin, isTimeOut, score, stableSeconds, onFinish }) {
+    const isId = true // bisa pakai useLanguage jika mau
+
+    return (
+        <div style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 200,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(4px)',
+        }}>
+            <div style={{
+                position: 'relative',
+                width: 420,
+                background: 'rgba(255,255,255,0.96)',
+                borderRadius: 16,
+                padding: '36px 32px',
+                textAlign: 'center',
+                boxShadow: '0 24px 64px rgba(0,80,160,0.3)',
+                border: isWin
+                    ? '2px solid #22c55e'
+                    : '2px solid #cc8800',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 16,
+            }}>
+
+                {/* Accent line atas */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0,
+                    height: 4,
+                    background: isWin
+                        ? 'linear-gradient(90deg,#22c55e,#16a34a)'
+                        : 'linear-gradient(90deg,#cc8800,#f59e0b)',
+                    borderRadius: '14px 14px 0 0',
+                }} />
+
+                {/* Icon status */}
+                <div style={{
+                    fontSize: 48,
+                    lineHeight: 1,
+                    marginTop: 8,
+                }}>
+                    {isWin ? '🏆' : '⏰'}
+                </div>
+
+                {/* Judul */}
+                <div style={{
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 18,
+                    fontWeight: 900,
+                    color: isWin ? '#16a34a' : '#cc8800',
+                    letterSpacing: 2,
+                }}>
+                    {isWin ? 'REAKTOR STABIL!' : 'WAKTU HABIS!'}
+                </div>
+
+                {/* Subjudul */}
+                <div style={{
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 9,
+                    color: '#7799bb',
+                    letterSpacing: 2,
+                }}>
+                    {isWin
+                        ? 'Daya 100kW berhasil distabilkan selama 15 detik'
+                        : 'Batas waktu 5 menit telah tercapai'}
+                </div>
+
+                {/* Skor sementara */}
+                <div style={{
+                    background: isWin ? '#f0fdf4' : '#fffbeb',
+                    border: `1px solid ${isWin ? '#86efac' : '#fcd34d'}`,
+                    borderRadius: 10,
+                    padding: '14px 32px',
+                    width: '100%',
+                }}>
+                    <div style={{
+                        fontFamily: "'Orbitron',monospace",
+                        fontSize: 10,
+                        color: '#7799bb',
+                        letterSpacing: 2,
+                        marginBottom: 6,
+                    }}>
+                        SKOR AKHIR
+                    </div>
+                    <div style={{
+                        fontFamily: "'Orbitron',monospace",
+                        fontSize: 42,
+                        fontWeight: 900,
+                        color: isWin ? '#16a34a' : '#b45309',
+                        lineHeight: 1,
+                    }}>
+                        {score}
+                    </div>
+                    <div style={{
+                        fontFamily: "'Orbitron',monospace",
+                        fontSize: 8,
+                        color: '#aabbcc',
+                        letterSpacing: 1,
+                        marginTop: 4,
+                    }}>
+                        dari 500 poin maksimal
+                    </div>
+                </div>
+
+                {/* Hint */}
+                <div style={{
+                    fontFamily: "'Orbitron',monospace",
+                    fontSize: 8,
+                    color: '#aabbcc',
+                    letterSpacing: 1,
+                }}>
+                    Gunakan tombol SELESAI di Panel Kontrol untuk melihat hasil lengkap
+                </div>
+            </div>
+        </div>
+    )
+}
+
 // ══════════════════════════════════════════
 // Main SimulationPage
 // ══════════════════════════════════════════
 export default function SimulationPage() {
     const navigate = useNavigate()
-    const { hintOrbit, scramActive, cherenkov } = useLanguage()
+    const location = useLocation()
+    const { t, hintOrbit, scramActive, cherenkov } = useLanguage()
+
+    const [nickname, setNickname] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [leftVisible, setLeftVisible] = useState(true)
 
-    const { rodPositions, isScrammed, scrammedRods, movingRods, moveRod, startHold, stopHold, scram, scramRod, resetScram, resetScramRod } = useControlRods()
+    const [isReactorActive, setIsReactorActive] = useState(false);
 
-    // ← BARU: Callback auto-SCRAM
+    const { rodPositions, isScrammed, scrammedRods, movingRods,
+        moveRod, startHold, stopHold, scram, scramRod,
+        resetScram, resetScramRod } = useControlRods()
+
     const handleAutoScram = useCallback((reason) => {
         console.warn('[AUTO-SCRAM TRIGGERED]', reason)
-        scram()  // Trigger scram semua rod
-        // Optional: tampilkan notifikasi
+        scram()
     }, [scram])
 
-    const { shiftPressed, lastAction, activeKeys } = useKeyboardControl(moveRod, isScrammed, scramRod, scrammedRods)
-    // Kirim ke useReactorAPI
+    const isKeyboardDisabled = !nickname || !isReactorActive;
+
+    const { shiftPressed, lastAction, activeKeys } =
+        useKeyboardControl(
+            moveRod,
+            isScrammed,
+            scramRod,
+            scrammedRods,
+            isKeyboardDisabled
+        )
+
     const { reactorData, apiStatus } = useReactorAPI(
-        rodPositions,
-        isScrammed,
-        handleAutoScram  // ← BARU: tambah callback
+        rodPositions, isScrammed, handleAutoScram, isReactorActive
     )
+
+    // Cek apakah masuk sebagai guru
+    const isFromGuru = location.state?.fromRole === 'guru'
+    const handleHome = useCallback(() => {
+        if (isFromGuru) {
+            navigate('/', { replace: true })  // Guru → langsung HomePage
+        } else {
+            navigate(-1)                       // Siswa → kembali ke PreparePage
+        }
+    }, [navigate, isFromGuru])
+
+    const [showPowerOffWarning, setShowPowerOffWarning] = useState(false);
+
+    const handlePowerToggle = useCallback(() => {
+        if (isScrammed) return; // Jangan biarkan menyalakan jika sedang scram
+
+        // Jika sedang ON dan ingin OFF → cek posisi batang kendali dulu
+        if (isReactorActive) {
+            const allZero =
+                rodPositions.safety === 0 &&
+                rodPositions.shim === 0 &&
+                rodPositions.regulating === 0;
+
+            if (!allZero) {
+                // Tampilkan warning modal
+                setShowPowerOffWarning(true);
+                return;
+            }
+        }
+
+        setIsReactorActive(prev => !prev);
+    }, [isScrammed, isReactorActive, rodPositions]);
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 1800)
         return () => clearTimeout(timer)
     }, [])
 
-    const handleHome = useCallback(() => {
-        navigate('/prepare')
-    }, [navigate])
+    // Di dalam komponen SimulationPage, tambahkan:
+    const {
+        score,
+        penaltyTotal,
+        stableSeconds,
+        timeElapsed,
+        isWin,
+        isTimeOut,
+        lastNotif,
+        getFinalScore,
+        STABLE_DURATION_SEC,
+        TIME_LIMIT_SEC,
+    } = useScoringSystem(isReactorActive, isScrammed, reactorData, rodPositions)
 
+    // Tambahkan state ini di dalam SimulationPage
+    const [showWinOverlay, setShowWinOverlay] = useState(false)
+
+    // Tambahkan useEffect pengganti
+    useEffect(() => {
+        if (isWin) {
+            setShowWinOverlay(true)
+        }
+    }, [isWin])
+
+    useEffect(() => {
+        if (isTimeOut) {
+            setShowWinOverlay(true)
+        }
+    }, [isTimeOut])
+
+    const handleFinish = useCallback(async () => {
+        const result = getFinalScore()
+
+        // Kirim ke database
+        try {
+            await fetch('/api/scores/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: nickname,
+                    score: result.finalScore,
+                    completion_time: result.timeElapsed,
+                    scram_count: 0,
+                })
+            })
+        } catch (err) {
+            console.warn('[SCORE] Gagal simpan ke DB:', err.message)
+        }
+
+        // Navigate ke SkorPage
+        navigate('/skor', {
+            state: {
+                score: result.finalScore,
+                penaltyTotal: result.penaltyTotal,
+                bonus: result.bonus,
+                penaltyLog: result.penaltyLog,
+                timeElapsed: result.timeElapsed,
+                maxPowerKw: reactorData?.power_kw || 0,
+                nickname,
+                status: isWin ? 'MENANG' : isTimeOut ? 'WAKTU HABIS' : 'SELESAI',
+                isWin,
+            }
+        })
+    }, [getFinalScore, reactorData, nickname, isScrammed, isWin, isTimeOut, navigate])
+
+    // ── SELALU render simulasi, modal di overlay ──
     return (
         <div style={ps.page}>
             <LoadingOverlay show={isLoading} />
 
-            {/* Header */}
+            {/* ══ NICKNAME MODAL OVERLAY ══
+        position fixed, didepan page simulasi, 
+          simulasi tetap render di belakang */}
+            {!nickname && (
+                <div
+                    onKeyDown={e => e.stopPropagation()}
+                    onKeyUp={e => e.stopPropagation()}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 9999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(15, 25, 50, 0.55)',
+                        backdropFilter: 'blur(2px)',
+                        WebkitBackdropFilter: 'blur(2px)',
+                    }}
+                >
+                    {/* Modal Card */}
+                    <div style={{
+                        position: 'relative',
+                        width: 360,
+                        // ── Card putih semi transparan ──
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(200,216,232,0.9)',
+                        borderRadius: 12,
+                        padding: '28px 24px',
+                        boxShadow: `
+              0 24px 64px rgba(0,80,160,0.3),
+              0 0 0 1px rgba(255,255,255,0.5)
+            `,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 14,
+                    }}>
+
+                        {/* Top Accent Line */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0,
+                            height: 3,
+                            background: 'linear-gradient(90deg, #0055aa, #0099ff, #0055aa)',
+                            borderRadius: '12px 12px 0 0',
+                        }} />
+
+                        {/* Icon */}
+                        <div style={{
+                            width: 52, height: 52,
+                            borderRadius: 12,
+                            backgroundColor: '#EEF4FF',
+                            border: '1.5px solid #c0d4f0',
+                            display: 'flex', alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 22,
+                            marginTop: 8,
+                        }}>
+                            <img
+                                src={profilIcon}
+                                alt="Profil"
+                                style={{ width: '30px', height: '30px', objectFit: 'contain' }}
+                            />
+                        </div>
+
+                        {/* Title */}
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{
+                                fontFamily: "'Orbitron',monospace",
+                                fontSize: 12, fontWeight: 700,
+                                color: '#0055aa', letterSpacing: 2,
+                                marginBottom: 4,
+                            }}>
+                                {t('nicknameTitle')}
+                            </div>
+                            <div style={{
+                                fontFamily: "'Orbitron',monospace",
+                                fontSize: 8, color: '#60666b',
+                                letterSpacing: 1,
+                            }}>
+                                {t('nicknameSubtitle')}
+                            </div>
+                        </div>
+
+                        {/* Input */}
+                        <NicknameInput onSubmit={setNickname} />
+
+                        {/* Hint */}
+                        <div style={{
+                            fontFamily: "'Orbitron',monospace",
+                            fontSize: 7, color: '#60666b',
+                            letterSpacing: 1, textAlign: 'center',
+                        }}>
+                            {t('nicknameHint')}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ══ SIMULASI - selalu render di bawah modal ══ */}
             <HeaderBar
                 onHome={handleHome}
                 reactorData={reactorData}
                 isScrammed={isScrammed}
             />
 
-            {/* Body */}
             <div style={ps.body}>
-
-                {/* ── LEFT PANEL (Monitor + Panduan + Rod Bar) ── */}
                 <div style={{ position: 'relative', display: 'flex', flexShrink: 0 }}>
                     <LeftPanel
                         rodPositions={rodPositions}
@@ -483,41 +1206,64 @@ export default function SimulationPage() {
                         isScrammed={isScrammed}
                         isVisible={leftVisible}
                         onToggle={() => setLeftVisible(v => !v)}
+                        isReactorActive={isReactorActive}
                     />
                 </div>
 
-                {/* ── CENTER — 3D Scene ── */}
                 <div style={ps.scene}>
                     <ReactorScene
                         rodPositions={rodPositions}
                         reactorData={reactorData}
                         isScrammed={isScrammed}
-                        movingRods={movingRods}   // ← NEW
+                        movingRods={movingRods}
+                        isReactorActive={isReactorActive}
                     />
-
-                    {/* Hint overlay */}
                     <div style={ps.overlayHint}>
                         <span style={ps.overlayText}>{hintOrbit}</span>
                     </div>
-
-                    {/* SCRAM overlay */}
                     {isScrammed && (
                         <div style={ps.scramOverlay}>
                             <span style={ps.scramText}>{scramActive}</span>
                         </div>
                     )}
-
-                    {/* Cherenkov label */}
                     {(reactorData?.power || 0) > 5 && !isScrammed && (
                         <div style={ps.cherenkovLabel}>
                             <div style={ps.cherenkovDot} />
                             <span style={ps.cherenkovText}>{cherenkov}</span>
                         </div>
                     )}
+                    {/* Notifikasi penalti/bonus — tambahkan di dalam div ps.scene */}
+                    {lastNotif && (
+                        <PenaltyNotif key={lastNotif.id} notif={lastNotif} />
+                    )}
+
+                    {/* Progress stabil daya */}
+                    {stableSeconds > 0 && !isScrammed && (
+                        <div style={{
+                            position: 'absolute', bottom: 40, left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: 'rgba(0,170,85,0.9)',
+                            color: '#fff', borderRadius: 8,
+                            padding: '8px 20px', pointerEvents: 'none',
+                            fontFamily: "'Orbitron',monospace", fontSize: 11,
+                            letterSpacing: 1,
+                        }}>
+                            STABIL: {stableSeconds}/{STABLE_DURATION_SEC} detik
+                        </div>
+                    )}
+                    {/* WIN OVERLAY — tambahkan di sini */}
+                    {showWinOverlay && (
+                        <WinOverlay
+                            isWin={isWin}
+                            isTimeOut={isTimeOut}
+                            score={score}
+                            stableSeconds={stableSeconds}
+                        />
+                    )}
                 </div>
 
-                {/* ── RIGHT PANEL — Control Panel (tab Kontrol saja) ── */}
                 <ControlPanel
+                    nickname={nickname}
                     rodPositions={rodPositions}
                     reactorData={reactorData}
                     isScrammed={isScrammed}
@@ -525,20 +1271,27 @@ export default function SimulationPage() {
                     shiftPressed={shiftPressed}
                     lastAction={lastAction}
                     apiStatus={apiStatus}
-                    onlyControl={true}   // ✅ prop baru: hanya tampilkan tab kontrol
-                    movingRods={movingRods}   // ← NEW
-                    onStartHold={startHold}   // ← NEW
-                    onStopHold={stopHold}     // ← NEW
-                    onScramRod={scramRod}              // ← NEW
-                    onResetScramRod={resetScramRod}    // ← NEW
-                    activeKeys={activeKeys}            // ← NEW
+                    onlyControl={true}
+                    movingRods={movingRods}
+                    onStartHold={startHold}
+                    onStopHold={stopHold}
+                    onScramRod={scramRod}
+                    onResetScramRod={resetScramRod}
+                    activeKeys={activeKeys}
+                    isReactorActive={isReactorActive}
+                    onPowerToggle={handlePowerToggle}
+                    onFinish={handleFinish}
+                    scrore={score}
+                    canFinish={isWin || isTimeOut}
+                    stableSeconds={stableSeconds}
+                    timeElapsed={timeElapsed}
                 />
             </div>
 
             <style>{`
-                @keyframes scram-blink    {0%,100%{opacity:1;}50%{opacity:0.4;}}
-                @keyframes cherenkov-blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
-            `}</style>
+        @keyframes scram-blink {0%,100%{opacity:1;}50%{opacity:0.4;}}
+        @keyframes cherenkov-blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
+      `}</style>
         </div>
     )
 }
@@ -547,11 +1300,11 @@ const ps = {
     page: { width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', background: '#f0f4f8', overflow: 'hidden', position: 'relative' },
     body: { flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0, position: 'relative' },
     scene: {
-        flex: 1,           // ✅ ini yang bikin scene melebar otomatis
+        flex: 1,
         position: 'relative',
         overflow: 'hidden',
         background: '#dce8f5',
-        transition: 'flex 0.3s ease',  // ✅ smooth transition
+        transition: 'flex 0.3s ease',
         minWidth: 0,
     },
     toggleBtn: {
@@ -566,7 +1319,6 @@ const ps = {
         transition: 'left 0.3s ease',
     },
 
-    // ✅ Ganti panel — pakai width transition, bukan transform
     panel: {
         height: '100%',
         background: '#ffffff',
@@ -577,7 +1329,6 @@ const ps = {
         flexShrink: 0,
         zIndex: 20,
         overflow: 'hidden',
-        // ✅ Animasi width — saat hide width jadi 0
         transition: 'width 0.3s ease',
     },
     overlayHint: {

@@ -5,12 +5,24 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useProgress } from '../../context/ProgressContext';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import AtomBackground from '../three/AtomBackground';
+//import icons
+import atomIcon from '../../assets/icon/atom.svg';
+import sejarahIcon from '../../assets/icon/sejarah.svg';
+import teknologiIcon from '../../assets/icon/teknologi.svg';
+import komponenIcon from '../../assets/icon/komponen.svg';
+import kontrolIcon from '../../assets/icon/kontrol.svg';
+import dayaIcon from '../../assets/icon/daya.svg';
+import sirineIcon from '../../assets/icon/sirine.svg';
+import kacaIcon from '../../assets/icon/kaca.svg';
+import pabrikIcon from '../../assets/icon/pabrik.svg';
+import perisaiIcon from '../../assets/icon/perisai.svg';
+import horeIcon from '../../assets/icon/hore.svg';
 
 // ── Data Materi ──
 const getMateriData = (t) => [
     {
         id: 1,
-        icon: '⚛️',
+        icon: atomIcon,
         color: '#3B82F6',
         bgColor: '#EFF6FF',
         title: t('materi1Title'),
@@ -20,16 +32,17 @@ const getMateriData = (t) => [
     },
     {
         id: 2,
-        icon: '📜',
+        icon: sejarahIcon,
         color: '#8B5CF6',
         bgColor: '#F5F3FF',
         title: t('materi2Title'),
         content: t('materi2Content'),
         tag: 'SEJARAH',
+        image: '/images/brin.png',
     },
     {
         id: 3,
-        icon: '🔬',
+        icon: teknologiIcon,
         color: '#10B981',
         bgColor: '#ECFDF5',
         title: t('materi3Title'),
@@ -38,7 +51,7 @@ const getMateriData = (t) => [
     },
     {
         id: 4,
-        icon: '⚙️',
+        icon: komponenIcon,
         color: '#F59E0B',
         bgColor: '#FFFBEB',
         title: t('materi4Title'),
@@ -47,7 +60,7 @@ const getMateriData = (t) => [
     },
     {
         id: 5,
-        icon: '🎮',
+        icon: kontrolIcon,
         color: '#EF4444',
         bgColor: '#FEF2F2',
         title: t('materi5Title'),
@@ -56,7 +69,7 @@ const getMateriData = (t) => [
     },
     {
         id: 6,
-        icon: '⚡',
+        icon: dayaIcon,
         color: '#F97316',
         bgColor: '#FFF7ED',
         title: t('materi6Title'),
@@ -65,7 +78,7 @@ const getMateriData = (t) => [
     },
     {
         id: 7,
-        icon: '🚨',
+        icon: sirineIcon,
         color: '#DC2626',
         bgColor: '#FEF2F2',
         title: t('materi7Title'),
@@ -74,7 +87,7 @@ const getMateriData = (t) => [
     },
     {
         id: 8,
-        icon: '💙',
+        icon: kacaIcon,
         color: '#06B6D4',
         bgColor: '#ECFEFF',
         title: t('materi8Title'),
@@ -83,7 +96,7 @@ const getMateriData = (t) => [
     },
     {
         id: 9,
-        icon: '🏭',
+        icon: pabrikIcon,
         color: '#059669',
         bgColor: '#ECFDF5',
         title: t('materi9Title'),
@@ -92,7 +105,7 @@ const getMateriData = (t) => [
     },
     {
         id: 10,
-        icon: '🛡️',
+        icon: perisaiIcon,
         color: '#1D4ED8',
         bgColor: '#EFF6FF',
         title: t('materi10Title'),
@@ -192,8 +205,7 @@ function ReadingProgress({ read, total }) {
     );
 }
 
-// ── Materi Card ──
-// ── Materi Card (hanya header, tanpa dropdown) ──
+// ── Materi Card ── //
 function MateriCard({ materi, index, isRead, onRead, onOpenModal }) {
     const [hovered, setHovered] = useState(false)
     const { t } = useLanguage()
@@ -273,7 +285,15 @@ function MateriCard({ materi, index, isRead, onRead, onOpenModal }) {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 18, transition: 'all 0.3s',
                 }}>
-                    {materi.icon}
+                    <img
+                        src={materi.icon}
+                        alt="icon"
+                        style={{
+                            width: 24,
+                            height: 24,
+                            objectFit: 'contain'
+                        }}
+                    />
                 </div>
 
                 {/* Title & Tag */}
@@ -311,22 +331,12 @@ function MateriCard({ materi, index, isRead, onRead, onOpenModal }) {
                         {materi.title}
                     </h3>
                 </div>
-
-                {/* Open Icon (bukan dropdown lagi) */}
-                <div style={{
-                    fontSize: 14,
-                    color: materi.color,
-                    transition: 'transform 0.3s ease',
-                    transform: hovered ? 'scale(1.2)' : 'scale(1)',
-                }}>
-                    📖
-                </div>
             </div>
         </div>
     )
 }
 
-// ── Materi Modal (Pop-up) ──
+// ── Materi Modal (Pop-up) ── //
 function MateriModal({ materi, isRead, onRead, onClose }) {
     const { t } = useLanguage()
     const [imgError, setImgError] = useState(false)
@@ -405,7 +415,15 @@ function MateriModal({ materi, isRead, onRead, onClose }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 22,
                     }}>
-                        {materi.icon}
+                        <img
+                            src={materi.icon}
+                            alt="icon"
+                            style={{
+                                width: 24,
+                                height: 24,
+                                objectFit: 'contain'
+                            }}
+                        />
                     </div>
 
                     {/* Title & Tag */}
@@ -509,7 +527,7 @@ function MateriModal({ materi, isRead, onRead, onClose }) {
                     <p style={{
                         margin: 0,
                         fontSize: 'clamp(12px, 1vw, 14px)',
-                        color: '#4B5563',
+                        color: '#18191a',
                         lineHeight: 1.8,
                         fontFamily: "'Rajdhani',sans-serif",
                     }}>
@@ -575,33 +593,6 @@ function MateriModal({ materi, isRead, onRead, onClose }) {
                             {t('materiTagDone') || 'SELESAI DIBACA'}
                         </div>
                     )}
-
-                    <button
-                        onClick={onClose}
-                        style={{
-                            backgroundColor: 'transparent',
-                            color: '#64748b',
-                            border: '1.5px solid #e2e8f0',
-                            borderRadius: 8,
-                            padding: '10px 24px',
-                            fontSize: 11,
-                            fontWeight: 700,
-                            letterSpacing: '1px',
-                            cursor: 'pointer',
-                            fontFamily: "'Rajdhani',sans-serif",
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={e => {
-                            e.currentTarget.style.borderColor = '#94a3b8'
-                            e.currentTarget.style.color = '#334155'
-                        }}
-                        onMouseLeave={e => {
-                            e.currentTarget.style.borderColor = '#e2e8f0'
-                            e.currentTarget.style.color = '#64748b'
-                        }}
-                    >
-                        {t('materiClose') || 'TUTUP'}
-                    </button>
                 </div>
             </div>
         </div>
@@ -739,7 +730,7 @@ export default function MateriPage() {
                 {/* All Done Banner */}
                 {allRead && (
                     <div style={s.doneBanner}>
-                        <span style={{ fontSize: 16 }}>🎉</span>
+                        <img src={horeIcon} alt="done" style={{ width: 30, height: 30, objectFit: 'contain' }} />
                         <span style={s.doneBannerText}>
                             {t('materiDoneBanner')}
                         </span>
@@ -897,7 +888,7 @@ const s = {
         animation: 'slideDown 0.4s ease',
     },
     doneBannerText: {
-        fontSize: 'clamp(9px,0.9vw,12px)', fontWeight: 700,
+        fontSize: 'clamp(14px,0.9vw,12px)', fontWeight: 700,
         color: '#16a34a', fontFamily: "'Rajdhani',sans-serif",
     },
 

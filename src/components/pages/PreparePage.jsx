@@ -5,6 +5,19 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useProgress } from '../../context/ProgressContext';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import AtomBackground from '../three/AtomBackground';
+//import icon
+import materiIcon from '../../assets/icon/materi.svg';
+import pretestIcon from '../../assets/icon/pretest.svg';
+import simulasiIcon from '../../assets/icon/simulasi.svg';
+import posttestIcon from '../../assets/icon/posttest.svg';
+import atomIcon from '../../assets/icon/atom.svg';
+import dayaIcon from '../../assets/icon/daya.svg';
+import bahanbakarIcon from '../../assets/icon/bahanbakar.svg';
+import airIcon from '../../assets/icon/air.svg';
+import lokasiIcon from '../../assets/icon/lokasi.svg';
+import checkIcon from '../../assets/icon/check.svg';
+import infoIcon from '../../assets/icon/info.svg';
+
 
 // ── Toast ──
 function Toast({ message, show, type }) {
@@ -12,8 +25,8 @@ function Toast({ message, show, type }) {
     const cfg = {
         error: { bg: '#fee2e2', border: '#ef4444', text: '#dc2626', icon: '🔒' },
         success: { bg: '#dcfce7', border: '#22c55e', text: '#16a34a', icon: '✅' },
-        info: { bg: '#dbeafe', border: '#3b82f6', text: '#2563eb', icon: 'ℹ️' },
-    }[type] || { bg: '#dbeafe', border: '#3b82f6', text: '#2563eb', icon: 'ℹ️' };
+        info: { bg: '#dbeafe', border: '#3b82f6', text: '#2563eb', icon: infoIcon },
+    }[type] || { bg: '#dbeafe', border: '#3b82f6', text: '#2563eb', icon: infoIcon };
 
     return (
         <div style={{
@@ -91,7 +104,7 @@ const pb = {
     },
 };
 
-// ── Main ──
+// ── Main ── //
 export default function PreparePage() {
     const navigate = useNavigate();
     const { t } = useLanguage();
@@ -121,25 +134,25 @@ export default function PreparePage() {
     const features = [
         {
             id: 1, stepKey: 'step1',
-            icon: '🔬', title: t('feature1Title'), description: t('feature1Desc'),
+            icon: materiIcon, title: t('feature1Title'), description: t('feature1Desc'),
             url: '/materi', type: 'internal', requiredStep: null,
         },
         {
             id: 2, stepKey: 'step2',
-            icon: '⚡', title: t('feature2Title'), description: t('feature2Desc'),
-            url: 'https://docs.google.com/forms/d/e/1FAIpQLSfHfRy1m1cu1DK47L02GNCfxgzLlFj7nmGLAPe65jTXB7o4NQ/viewform?usp=header', 
+            icon: pretestIcon, title: t('feature2Title'), description: t('feature2Desc'),
+            url: 'https://docs.google.com/forms/d/e/1FAIpQLSfHfRy1m1cu1DK47L02GNCfxgzLlFj7nmGLAPe65jTXB7o4NQ/viewform?usp=header',
             type: 'external', requiredStep: 'step1',
         },
         {
             id: 3, stepKey: 'step3',
-            icon: '📡', title: t('feature3Title'), description: t('feature3Desc'),
+            icon: simulasiIcon, title: t('feature3Title'), description: t('feature3Desc'),
             url: '/simulation',
             type: 'internal', requiredStep: 'step2',
         },
         {
             id: 4, stepKey: 'step4',
-            icon: '🛡️', title: t('feature4Title'), description: t('feature4Desc'),
-            url: 'https://docs.google.com/forms/d/e/1FAIpQLSc86xtMLelO0JehD81E7A9wuksqFzM53D3ZQpl1UEU-YITp5w/viewform?usp=header', 
+            icon: posttestIcon, title: t('feature4Title'), description: t('feature4Desc'),
+            url: 'https://docs.google.com/forms/d/e/1FAIpQLSc86xtMLelO0JehD81E7A9wuksqFzM53D3ZQpl1UEU-YITp5w/viewform?usp=header',
             type: 'external', requiredStep: 'step3',
         },
     ];
@@ -157,6 +170,7 @@ export default function PreparePage() {
             return;
         }
         if (feature.type === 'internal') {
+            completeStep(feature.stepKey);
             navigate(feature.url);
         } else {
             completeStep(feature.stepKey);
@@ -168,12 +182,12 @@ export default function PreparePage() {
     const canStart = progress.step1 && progress.step2;
 
     const specs = [
-        { icon: '⚛️', label: t('specTipe'), value: 'TRIGA Mark II', color: '#8B5CF6' },
-        { icon: '⚡', label: t('specDaya'), value: '100 kW', color: '#F59E0B' },
-        { icon: '🔋', label: t('specBakar'), value: 'U-ZrH', color: '#10B981' },
-        { icon: '💧', label: t('specModerator'), value: t('specModeratorVal'), color: '#3B82F6' },
-        { icon: '📍', label: t('specLokasi'), value: 'Yogyakarta', color: '#EF4444' },
-        { icon: '✅', label: t('specStatus'), value: t('specStatusVal'), color: '#10B981' },
+        { icon: atomIcon, label: t('specTipe'), value: 'TRIGA Mark II', color: '#8B5CF6' },
+        { icon: dayaIcon, label: t('specDaya'), value: '100 kW', color: '#F59E0B' },
+        { icon: bahanbakarIcon, label: t('specBakar'), value: 'U-ZrH', color: '#10B981' },
+        { icon: airIcon, label: t('specModerator'), value: t('specModeratorVal'), color: '#3B82F6' },
+        { icon: lokasiIcon, label: t('specLokasi'), value: 'Yogyakarta', color: '#EF4444' },
+        { icon: checkIcon, label: t('specStatus'), value: t('specStatusVal'), color: '#10B981' },
     ];
 
     return (
@@ -216,7 +230,7 @@ export default function PreparePage() {
             </button>
             <div style={s.langPos}><LanguageSwitcher /></div>
 
-            {/* ── MAIN LAYOUT: 1 layar penuh ── */}
+            {/* ── MAIN LAYOUT: 1 ── */}
             <div style={s.layout}>
 
                 {/* Section Label */}
@@ -275,7 +289,15 @@ export default function PreparePage() {
 
                                 {/* Icon */}
                                 <div style={{ ...s.iconBox, opacity: unlocked ? 1 : 0.4 }}>
-                                    <span style={{ fontSize: 20 }}>{f.icon}</span>
+                                    <img
+                                        src={f.icon}
+                                        alt={f.title}
+                                        style={{
+                                            width: 30,
+                                            height: 30,
+                                            objectFit: 'contain'
+                                        }}
+                                    />
                                 </div>
 
                                 <h3 style={{ ...s.cardTitle, color: completed ? '#16a34a' : '#1e4fd8' }}>
@@ -316,7 +338,16 @@ export default function PreparePage() {
                     <div style={s.specsBody}>
                         {specs.map((sp, i) => (
                             <div key={i} style={s.specItem}>
-                                <span style={{ fontSize: 18, marginBottom: 3 }}>{sp.icon}</span>
+                                <img
+                                    src={sp.icon}
+                                    alt={sp.label}
+                                    style={{
+                                        width: 20,
+                                        height: 20,
+                                        marginBottom: 3,
+                                        objectFit: 'contain'
+                                    }}
+                                />
                                 <p style={{ ...s.specLabel, color: sp.color }}>{sp.label}</p>
                                 <p style={s.specValue}>{sp.value}</p>
                             </div>
@@ -328,7 +359,11 @@ export default function PreparePage() {
                 <div style={s.btnArea}>
                     {!canStart && (
                         <div style={s.reqBox}>
-                            <span style={{ fontSize: 12 }}>ℹ️</span>
+                            <img
+                                src={infoIcon}
+                                alt="Info"
+                                style={{ width: '15px', height: '15px', objectFit: 'contain' }}
+                            />
                             <span style={s.reqText}>
                                 {t('requirementHint') || 'Selesaikan Tahap 1 & 2 untuk membuka simulasi'}
                             </span>
@@ -409,7 +444,6 @@ function FloatingDots() {
 
 // ── Styles ──
 const s = {
-    // ✅ Full page, no scroll
     page: {
         position: 'relative',
         width: '100vw',
@@ -439,7 +473,6 @@ const s = {
     },
     langPos: { position: 'fixed', top: 14, right: 14, zIndex: 100 },
 
-    // ✅ Layout utama — fit 1 layar
     layout: {
         position: 'relative', zIndex: 10,
         width: '100%',
@@ -449,7 +482,7 @@ const s = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 'clamp(6px, 1vh, 14px)',   // ✅ gap responsif
+        gap: 'clamp(6px, 1vh, 14px)',
         overflow: 'hidden',
     },
 
@@ -466,7 +499,6 @@ const s = {
         fontFamily: "'Rajdhani',sans-serif",
     },
 
-    // ✅ Cards grid responsif
     cardsGrid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(4,1fr)',

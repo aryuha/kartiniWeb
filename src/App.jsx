@@ -6,13 +6,13 @@ import { ProgressProvider } from './context/ProgressContext';
 import HomePage from './components/pages/HomePage';
 import PreparePage from './components/pages/PreparePage';
 import SimulationPage from './components/pages/SimulationPage';
+import SkorPage from './components/pages/SkorPage';
 import './App.css';
 import MateriPage from './components/pages/MateriPage';
 
 function App() {
   return (
     <LanguageProvider>
-      {/* ✅ ProgressProvider di luar Router agar state tidak hancur saat navigate */}
       <ProgressProvider>
         <Router
           future={{
@@ -25,6 +25,7 @@ function App() {
             <Route path="/prepare" element={<PreparePage />} />
             <Route path='/materi' element={<MateriPage />} />
             <Route path="/simulation" element={<SimulationPage />} />
+            <Route path="/skor" element={<SkorPage />} />
           </Routes>
         </Router>
       </ProgressProvider>

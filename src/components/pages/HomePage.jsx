@@ -5,6 +5,9 @@ import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import AtomBackground from '../three/AtomBackground';
 import { useProgress } from '../../context/ProgressContext';
+//import icons
+import siswaIcon from '../../assets/icon/siswa.svg';
+import guruIcon from '../../assets/icon/guru.svg';
 
 // ── Glitch Title Component ──
 function GlitchTitle() {
@@ -210,17 +213,179 @@ function FloatingDots() {
     );
 }
 
+// ── Role Modal Sederhana ──  //
+function RoleModal({ onClose }) {
+    const navigate = useNavigate();
+    const { t } = useLanguage();
+
+    return (
+        <div
+            onClick={onClose}
+            style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'transparent',
+                backdropFilter: 'blur(2px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 999,
+            }}
+        >
+            {/* fungsi klik di dalam modal tidak menutup */}
+            <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                    background: 'rgba(255,255,255,0.97)',
+                    borderRadius: 16,
+                    padding: '2rem 2.5rem',
+                    width: 320,
+                    textAlign: 'center',
+                    boxShadow: '0 20px 60px rgba(10,20,80,0.2)',
+                    border: '1px solid rgba(37,99,235,0.15)',
+                    position: 'relative',
+                }}
+            >
+                {/* Tombol Tutup */}
+                <button
+                    onClick={onClose}
+                    style={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        background: 'none',
+                        border: 'none',
+                        fontSize: 18,
+                        cursor: 'pointer',
+                        color: '#9ca3af',
+                        lineHeight: 1,
+                    }}
+                >
+                    X
+                </button>
+
+                {/* Judul */}
+                <p style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '3px',
+                    color: '#2563eb',
+                    marginBottom: 8,
+                    fontFamily: "'Rajdhani', sans-serif",
+                }}>
+                    {t('homeProfesi')}
+                </p>
+                <h2 style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    color: '#1e3a8a',
+                    margin: '0 0 6px',
+                    fontFamily: "'Rajdhani', sans-serif",
+                }}>
+                    {t('profesiTitle')}
+                </h2>
+                <p style={{
+                    fontSize: 13,
+                    color: '#6b7280',
+                    marginBottom: 24,
+                }}>
+                    {t('profesiDesc')}
+                </p>
+
+                {/* Tombol Siswa */}
+                <button
+                    onClick={() => { onClose(); navigate('/prepare'); }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#1e3a8a';
+                        e.currentTarget.style.color = '#fff';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#1e3a8a';
+                    }}
+                    style={{
+                        width: '100%',
+                        padding: '13px',
+                        marginBottom: 10,
+                        background: 'transparent',
+                        color: '#1e3a8a',
+                        border: '2px solid #1e3a8a',
+                        borderRadius: 8,
+                        fontSize: 15,
+                        fontWeight: 700,
+                        letterSpacing: '2px',
+                        cursor: 'pointer',
+                        fontFamily: "'Rajdhani', sans-serif",
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                    }}
+                >
+                    <img
+                        src={siswaIcon}
+                        alt="Siswa"
+                        style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                    />
+                <span>{t('profesiSiswa')}</span>
+                </button>
+
+                {/* Tombol Guru */}
+                <button
+                    onClick={() => { onClose(); navigate('/simulation', { replace: true, state: { fromRole: 'guru' } }); }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#2563eb';
+                        e.currentTarget.style.color = '#fff';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#2563eb';
+                    }}
+                    style={{
+                        width: '100%',
+                        padding: '13px',
+                        marginBottom: 16,
+                        background: 'transparent',
+                        color: '#2563eb',
+                        border: '2px solid #2563eb',
+                        borderRadius: 8,
+                        fontSize: 15,
+                        fontWeight: 700,
+                        letterSpacing: '2px',
+                        cursor: 'pointer',
+                        fontFamily: "'Rajdhani', sans-serif",
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                    }}
+                >
+                    <img
+                        src={guruIcon}
+                        alt="Guru"
+                        style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                    />
+                    <span>{t('profesiGuru')}</span>
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ── Main HomePage ──
 export default function HomePage() {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const { resetProgress } = useProgress();
     const [visible, setVisible] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
+        resetProgress();
         const timer = setTimeout(() => setVisible(true), 100);
         return () => clearTimeout(timer);
-        resetProgress();
     }, []);
 
     return (
@@ -294,7 +459,7 @@ export default function HomePage() {
                 {/* CTA Button */}
                 <button
                     style={s.cta}
-                    onClick={() => navigate('/prepare')}
+                    onClick={() => setShowModal(true)}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.background = '#1e4fd8';
                         e.currentTarget.style.color = '#ffffff';
@@ -310,6 +475,11 @@ export default function HomePage() {
                 >
                     {t('btnSelengkapnya')}
                 </button>
+
+                {/* Modal */}
+                {showModal && (
+                    <RoleModal onClose={() => setShowModal(false)} />
+                )}
 
             </div>
 

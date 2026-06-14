@@ -4,11 +4,13 @@
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import mysql
 from pydantic import BaseModel, Field
 from typing import Optional
 import math
 import asyncio
 from datetime import datetime
+import mysql.connector
 
 app = FastAPI(
     title="Reaktor Kartini API",
@@ -24,6 +26,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ============================================
+# Mysql
+# ============================================
+def get_db():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",          # XAMPP default password kosong
+        database="reaktorkartini"
+    )
 
 # ============================================
 # MODELS
@@ -257,6 +270,56 @@ async def get_status():
         "location": "BATAN Yogyakarta",
         "timestamp": datetime.now().isoformat(),
     }
+
+# ============================================
+# Skor
+# ============================================
+class ScoreInput(BaseModel):
+    username: str
+    score: int
+    completion_time: int      # detik
+    scram_count: int
+
+class ScoreOutput(BaseModel):
+    id: int
+    username: str
+    score: int
+    completion_time: int
+    scram_count: int
+    created_at: str
+
+# Tambahkan endpoint ini
+@app.post("/scores/save")
+async def save_score(data: ScoreInput):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "INSERT INTO scores (username, score, completion_time, scram_count) VALUES (%s, %s, %s, %s)",
+            (data.username, data.score, data.completion_time, data.scram_count)
+        )
+        db.commit()
+        new_id = cursor.lastrowid
+        cursor.close()
+        db.close()
+        return {"success": True, "id": new_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/scores/leaderboard")
+async def get_leaderboard():
+    try:
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT * FROM scores ORDER BY score DESC LIMIT 50"
+        )
+        rows = cursor.fetchall()
+        cursor.close()
+        db.close()
+        return rows
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================
 # RUN SERVER
