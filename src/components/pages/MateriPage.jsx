@@ -5,12 +5,24 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useProgress } from '../../context/ProgressContext';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import AtomBackground from '../three/AtomBackground';
+//import icons
+import atomIcon from '../../assets/icon/atom.svg';
+import sejarahIcon from '../../assets/icon/sejarah.svg';
+import teknologiIcon from '../../assets/icon/teknologi.svg';
+import komponenIcon from '../../assets/icon/komponen.svg';
+import kontrolIcon from '../../assets/icon/kontrol.svg';
+import dayaIcon from '../../assets/icon/daya.svg';
+import sirineIcon from '../../assets/icon/sirine.svg';
+import kacaIcon from '../../assets/icon/kaca.svg';
+import pabrikIcon from '../../assets/icon/pabrik.svg';
+import perisaiIcon from '../../assets/icon/perisai.svg';
+import horeIcon from '../../assets/icon/hore.svg';
 
 // ── Data Materi ──
 const getMateriData = (t) => [
     {
         id: 1,
-        icon: '⚛️',
+        icon: atomIcon,
         color: '#3B82F6',
         bgColor: '#EFF6FF',
         title: t('materi1Title'),
@@ -20,16 +32,17 @@ const getMateriData = (t) => [
     },
     {
         id: 2,
-        icon: '📜',
+        icon: sejarahIcon,
         color: '#8B5CF6',
         bgColor: '#F5F3FF',
         title: t('materi2Title'),
         content: t('materi2Content'),
         tag: 'SEJARAH',
+        image: '/images/brin.png',
     },
     {
         id: 3,
-        icon: '🔬',
+        icon: teknologiIcon,
         color: '#10B981',
         bgColor: '#ECFDF5',
         title: t('materi3Title'),
@@ -38,7 +51,7 @@ const getMateriData = (t) => [
     },
     {
         id: 4,
-        icon: '⚙️',
+        icon: komponenIcon,
         color: '#F59E0B',
         bgColor: '#FFFBEB',
         title: t('materi4Title'),
@@ -47,7 +60,7 @@ const getMateriData = (t) => [
     },
     {
         id: 5,
-        icon: '🎮',
+        icon: kontrolIcon,
         color: '#EF4444',
         bgColor: '#FEF2F2',
         title: t('materi5Title'),
@@ -56,7 +69,7 @@ const getMateriData = (t) => [
     },
     {
         id: 6,
-        icon: '⚡',
+        icon: dayaIcon,
         color: '#F97316',
         bgColor: '#FFF7ED',
         title: t('materi6Title'),
@@ -65,7 +78,7 @@ const getMateriData = (t) => [
     },
     {
         id: 7,
-        icon: '🚨',
+        icon: sirineIcon,
         color: '#DC2626',
         bgColor: '#FEF2F2',
         title: t('materi7Title'),
@@ -74,7 +87,7 @@ const getMateriData = (t) => [
     },
     {
         id: 8,
-        icon: '💙',
+        icon: kacaIcon,
         color: '#06B6D4',
         bgColor: '#ECFEFF',
         title: t('materi8Title'),
@@ -83,7 +96,7 @@ const getMateriData = (t) => [
     },
     {
         id: 9,
-        icon: '🏭',
+        icon: pabrikIcon,
         color: '#059669',
         bgColor: '#ECFDF5',
         title: t('materi9Title'),
@@ -92,7 +105,7 @@ const getMateriData = (t) => [
     },
     {
         id: 10,
-        icon: '🛡️',
+        icon: perisaiIcon,
         color: '#1D4ED8',
         bgColor: '#EFF6FF',
         title: t('materi10Title'),
@@ -167,7 +180,7 @@ function ReadingProgress({ read, total }) {
                     fontSize: 9, fontWeight: 700, letterSpacing: '2px',
                     color: '#1e3a8a', fontFamily: "'Rajdhani',sans-serif",
                 }}>
-                    {t('materiProgressLabel') || 'PROGRESS MEMBACA'}
+                    {t('materiProgressLabel')}
                 </span>
                 <span style={{
                     fontSize: 11, fontWeight: 800, color: '#2563eb',
@@ -192,8 +205,7 @@ function ReadingProgress({ read, total }) {
     );
 }
 
-// ── Materi Card ──
-// ── Materi Card (hanya header, tanpa dropdown) ──
+// ── Materi Card ── //
 function MateriCard({ materi, index, isRead, onRead, onOpenModal }) {
     const [hovered, setHovered] = useState(false)
     const { t } = useLanguage()
@@ -273,7 +285,15 @@ function MateriCard({ materi, index, isRead, onRead, onOpenModal }) {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 18, transition: 'all 0.3s',
                 }}>
-                    {materi.icon}
+                    <img
+                        src={materi.icon}
+                        alt="icon"
+                        style={{
+                            width: 24,
+                            height: 24,
+                            objectFit: 'contain'
+                        }}
+                    />
                 </div>
 
                 {/* Title & Tag */}
@@ -296,7 +316,7 @@ function MateriCard({ materi, index, isRead, onRead, onOpenModal }) {
                                 padding: '2px 8px', borderRadius: 4,
                                 fontFamily: "'Rajdhani',sans-serif",
                             }}>
-                                {t('materiTagDone') || 'SELESAI'}
+                                {t('materiTagDone')}
                             </span>
                         )}
                     </div>
@@ -311,22 +331,82 @@ function MateriCard({ materi, index, isRead, onRead, onOpenModal }) {
                         {materi.title}
                     </h3>
                 </div>
-
-                {/* Open Icon (bukan dropdown lagi) */}
-                <div style={{
-                    fontSize: 14,
-                    color: materi.color,
-                    transition: 'transform 0.3s ease',
-                    transform: hovered ? 'scale(1.2)' : 'scale(1)',
-                }}>
-                    📖
-                </div>
             </div>
         </div>
     )
 }
 
-// ── Materi Modal (Pop-up) ──
+// ── Parser konten: pisah (1), (2), dst. menjadi baris terpisah ──
+function renderMateriContent(content, color) {
+    // Pisah tepat sebelum setiap (N) — hanya angka ASCII, bukan (H₂O) dll.
+    const segments = content.split(/(?=\(\d+\))/)
+
+    const baseText = {
+        fontSize: 'clamp(12px, 1vw, 14px)',
+        color: '#18191a',
+        lineHeight: 1.8,
+        fontFamily: "'Poppins',sans-serif",
+    }
+
+    // Tidak ada pola angka → tampilkan biasa
+    if (segments.length <= 1) {
+        return (
+            <p style={{ ...baseText, margin: 0, textAlign: 'justify' }}>
+                {content}
+            </p>
+        )
+    }
+
+    const intro = segments[0].trim()
+    const items = segments.slice(1).map(seg => {
+        const numMatch = seg.match(/^\((\d+)\)\s*/)
+        if (!numMatch) return { num: '', text: seg.trim() }
+        const num = numMatch[1]
+        const text = seg.slice(numMatch[0].length).replace(/;\s*$/, '').trim()
+        return { num, text }
+    })
+
+    return (
+        <div>
+            {intro && (
+                <p style={{ ...baseText, margin: '0 0 14px 0', textAlign: 'justify' }}>
+                    {intro}
+                </p>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {items.map(({ num, text }, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                        {/* Badge nomor */}
+                        <span style={{
+                            flexShrink: 0,
+                            width: 24,
+                            height: 24,
+                            borderRadius: '50%',
+                            backgroundColor: `${color}20`,
+                            border: `1.5px solid ${color}60`,
+                            color: color,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontFamily: "'Rajdhani',sans-serif",
+                            marginTop: 3,
+                        }}>
+                            {num}
+                        </span>
+                        {/* Teks item */}
+                        <p style={{ ...baseText, margin: 0, flex: 1, textAlign: 'justify' }}>
+                            {text}
+                        </p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+// ── Materi Modal (Pop-up) ── //
 function MateriModal({ materi, isRead, onRead, onClose }) {
     const { t } = useLanguage()
     const [imgError, setImgError] = useState(false)
@@ -405,7 +485,15 @@ function MateriModal({ materi, isRead, onRead, onClose }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 22,
                     }}>
-                        {materi.icon}
+                        <img
+                            src={materi.icon}
+                            alt="icon"
+                            style={{
+                                width: 24,
+                                height: 24,
+                                objectFit: 'contain'
+                            }}
+                        />
                     </div>
 
                     {/* Title & Tag */}
@@ -428,7 +516,7 @@ function MateriModal({ materi, isRead, onRead, onClose }) {
                                     padding: '2px 10px', borderRadius: 4,
                                     fontFamily: "'Rajdhani',sans-serif",
                                 }}>
-                                    {t('materiTagDone') || 'SELESAI'}
+                                    {t('materiTagDone')}
                                 </span>
                             )}
                         </div>
@@ -506,15 +594,7 @@ function MateriModal({ materi, isRead, onRead, onClose }) {
                     )}
 
                     {/* Konten Teks */}
-                    <p style={{
-                        margin: 0,
-                        fontSize: 'clamp(12px, 1vw, 14px)',
-                        color: '#4B5563',
-                        lineHeight: 1.8,
-                        fontFamily: "'Rajdhani',sans-serif",
-                    }}>
-                        {materi.content}
-                    </p>
+                    {renderMateriContent(materi.content, materi.color)}
                 </div>
 
                 {/* Modal Footer */}
@@ -553,7 +633,7 @@ function MateriModal({ materi, isRead, onRead, onClose }) {
                                 e.currentTarget.style.boxShadow = `0 4px 12px ${materi.color}40`
                             }}
                         >
-                            ✓ {t('materiMarkRead') || 'TANDAI DIBACA'}
+                            ✓ {t('materiReadAll')}
                         </button>
                     ) : (
                         <div style={{
@@ -572,36 +652,9 @@ function MateriModal({ materi, isRead, onRead, onClose }) {
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 color: '#fff', fontSize: 11,
                             }}>✓</span>
-                            {t('materiTagDone') || 'SELESAI DIBACA'}
+                            {t('materiTagDone')}
                         </div>
                     )}
-
-                    <button
-                        onClick={onClose}
-                        style={{
-                            backgroundColor: 'transparent',
-                            color: '#64748b',
-                            border: '1.5px solid #e2e8f0',
-                            borderRadius: 8,
-                            padding: '10px 24px',
-                            fontSize: 11,
-                            fontWeight: 700,
-                            letterSpacing: '1px',
-                            cursor: 'pointer',
-                            fontFamily: "'Rajdhani',sans-serif",
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={e => {
-                            e.currentTarget.style.borderColor = '#94a3b8'
-                            e.currentTarget.style.color = '#334155'
-                        }}
-                        onMouseLeave={e => {
-                            e.currentTarget.style.borderColor = '#e2e8f0'
-                            e.currentTarget.style.color = '#64748b'
-                        }}
-                    >
-                        {t('materiClose') || 'TUTUP'}
-                    </button>
                 </div>
             </div>
         </div>
@@ -721,7 +774,7 @@ export default function MateriPage() {
                 <div style={s.sectionLabel}>
                     <span style={{ color: '#2563eb', fontSize: 6 }}>◆</span>
                     <span style={s.sectionLabelText}>
-                        {t('materiPageTitle') || 'MATERI REAKTOR KARTINI'}
+                        {t('materiPageTitle')}
                     </span>
                     <span style={{ color: '#2563eb', fontSize: 6 }}>◆</span>
                 </div>
@@ -729,7 +782,7 @@ export default function MateriPage() {
                 {/* Subtitle */}
                 <div style={s.subtitleBox}>
                     <span style={s.subtitleText}>
-                        {t('materiPageSubtitle') || 'PENGETAHUAN DASAR REAKTOR NUKLIR'}
+                        {t('materiPageSubtitle')}
                     </span>
                 </div>
 
@@ -739,7 +792,7 @@ export default function MateriPage() {
                 {/* All Done Banner */}
                 {allRead && (
                     <div style={s.doneBanner}>
-                        <span style={{ fontSize: 16 }}>🎉</span>
+                        <img src={horeIcon} alt="done" style={{ width: 30, height: 30, objectFit: 'contain' }} />
                         <span style={s.doneBannerText}>
                             {t('materiDoneBanner')}
                         </span>
@@ -778,7 +831,7 @@ export default function MateriPage() {
                                     e.currentTarget.style.transform = 'scale(1)';
                                 }}
                             >
-                                ✓ {t('materiReadAll') || 'TANDAI SEMUA SELESAI'}
+                                ✓ {t('materiReadAll')}
                             </button>
                         ) : (
                             <button
@@ -793,7 +846,7 @@ export default function MateriPage() {
                                     e.currentTarget.style.transform = 'scale(1)';
                                 }}
                             >
-                                {t('materiBackGuide') || '← KEMBALI KE PANDUAN'}
+                                {t('materiBackGuide')}
                             </button>
                         )}
                     </div>
@@ -897,7 +950,7 @@ const s = {
         animation: 'slideDown 0.4s ease',
     },
     doneBannerText: {
-        fontSize: 'clamp(9px,0.9vw,12px)', fontWeight: 700,
+        fontSize: 'clamp(14px,0.9vw,12px)', fontWeight: 700,
         color: '#16a34a', fontFamily: "'Rajdhani',sans-serif",
     },
 

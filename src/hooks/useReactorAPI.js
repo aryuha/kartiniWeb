@@ -19,7 +19,7 @@ const INITIAL_REACTOR_DATA = {
     rod_positions: { safety: 0, shim: 0, regulating: 0 },
 }
 
-export const useReactorAPI = (rodPositions, isScrammed, onAutoScram) => {
+export const useReactorAPI = (rodPositions, isScrammed, onAutoScram, isReactorActive) => {
     const [reactorData, setReactorData] = useState(INITIAL_REACTOR_DATA)
     const [isLoading, setIsLoading] = useState(false)
     const [apiStatus, setApiStatus] = useState('disconnected') // 'connected' | 'disconnected' | 'error'
@@ -27,15 +27,15 @@ export const useReactorAPI = (rodPositions, isScrammed, onAutoScram) => {
     const pollRef = useRef(null)
     const prevPositions = useRef(null)
 
-    // ← BARU: Konstanta threshold
+    // Konstanta threshold
     const SCRAM_THRESHOLD_KW = 110  // Auto-SCRAM di 110 kW
     const autoScramRef = useRef(false)  // Cegah trigger berulang
 
     const fetchReactorData = useCallback(async () => {
-        if (isScrammed) {
+        if (!isReactorActive || isScrammed) {
             setReactorData(prev => ({
                 ...INITIAL_REACTOR_DATA,
-                status: 'SCRAM',
+                status: isScrammed ? 'SCRAM' : 'SHUTDOWN',
                 temperature: prev.temperature > 25 ? prev.temperature - 0.5 : 25,
             }))
             autoScramRef.current = false  // Reset flag saat scram
@@ -55,7 +55,7 @@ export const useReactorAPI = (rodPositions, isScrammed, onAutoScram) => {
             setApiStatus('connected')
             setError(null)
 
-            // ← BARU: Cek auto-SCRAM
+            // Cek auto-SCRAM
             const currentPowerKw = data?.power_kw || 0
             const scramTriggered = data?.scram_triggered || false
 
@@ -76,7 +76,7 @@ export const useReactorAPI = (rodPositions, isScrammed, onAutoScram) => {
         } finally {
             setIsLoading(false)
         }
-    }, [rodPositions, isScrammed, apiStatus, onAutoScram])
+    }, [rodPositions, isScrammed, isReactorActive, apiStatus, onAutoScram])
 
     const handleScram = useCallback(async () => {
         try {

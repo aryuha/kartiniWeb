@@ -1,18 +1,22 @@
 // src/App.jsx
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { ProgressProvider } from './context/ProgressContext';
 import HomePage from './components/pages/HomePage';
-import PreparePage from './components/pages/PreparePage';
-import SimulationPage from './components/pages/SimulationPage';
 import './App.css';
-import MateriPage from './components/pages/MateriPage';
+
+const PreparePage = lazy(() => import('./components/pages/PreparePage'));
+const SimulationPage = lazy(() => import('./components/pages/SimulationPage'));
+const IRLModePage = lazy(() => import('./components/pages/IRLModePage'));
+const SkorPage = lazy(() => import('./components/pages/SkorPage'));
+const MateriPage = lazy(() => import('./components/pages/MateriPage'));
+
+const PageShell = () => <div style={{ width: '100%', height: '100vh', background: '#060d1a' }} />
 
 function App() {
   return (
     <LanguageProvider>
-      {/* ✅ ProgressProvider di luar Router agar state tidak hancur saat navigate */}
       <ProgressProvider>
         <Router
           future={{
@@ -20,12 +24,16 @@ function App() {
             v7_relativeSplatPath: true,
           }}
         >
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/prepare" element={<PreparePage />} />
-            <Route path='/materi' element={<MateriPage />} />
-            <Route path="/simulation" element={<SimulationPage />} />
-          </Routes>
+          <Suspense fallback={<PageShell />}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/prepare" element={<PreparePage />} />
+              <Route path='/materi' element={<MateriPage />} />
+              <Route path="/simulation" element={<SimulationPage />} />
+              <Route path="/irl-mode" element={<IRLModePage />} />
+              <Route path="/skor" element={<SkorPage />} />
+            </Routes>
+          </Suspense>
         </Router>
       </ProgressProvider>
     </LanguageProvider>

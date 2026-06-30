@@ -1,5 +1,6 @@
 // src/components/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
@@ -9,83 +10,62 @@ import { useProgress } from '../../context/ProgressContext';
 // ── Glitch Title Component ──
 function GlitchTitle() {
     const text = 'GLOWLAB KARTINI';
-
     return (
         <>
             <style>{`
         @keyframes glitch-main {
           0%, 90%, 100% { transform: translate(0, 0) skew(0deg); opacity: 1; }
-          91%  { transform: translate(-3px, 1px) skew(-1deg); opacity: 0.95; }
-          92%  { transform: translate(3px, -1px) skew(1deg);  opacity: 0.95; }
-          93%  { transform: translate(0, 0) skew(0deg);       opacity: 1;    }
-          94%  { transform: translate(-2px, 2px) skew(-0.5deg); }
-          95%  { transform: translate(2px, -2px) skew(0.5deg);  }
-          96%  { transform: translate(0, 0);                     }
+          91% { transform: translate(-3px, 1px) skew(-1deg); opacity: 0.95; }
+          92% { transform: translate(3px, -1px) skew(1deg); opacity: 0.95; }
+          93% { transform: translate(0, 0) skew(0deg); opacity: 1; }
+          94% { transform: translate(-2px, 2px) skew(-0.5deg); }
+          95% { transform: translate(2px, -2px) skew(0.5deg); }
+          96% { transform: translate(0, 0); }
         }
-
         @keyframes glitch-red {
           0%, 89%, 100% { clip-path: inset(100% 0 100% 0); transform: translate(0); }
-          90%  { clip-path: inset(10% 0 60% 0);  transform: translate(-6px, 0); opacity: 0.8; }
-          91%  { clip-path: inset(60% 0 15% 0);  transform: translate(5px, 0);  opacity: 0.8; }
-          92%  { clip-path: inset(30% 0 40% 0);  transform: translate(-4px, 0); opacity: 0.8; }
-          93%  { clip-path: inset(80% 0 5% 0);   transform: translate(6px, 0);  opacity: 0.8; }
-          94%  { clip-path: inset(45% 0 25% 0);  transform: translate(-3px, 0); opacity: 0.8; }
-          95%  { clip-path: inset(100% 0 100% 0); transform: translate(0); }
+          90% { clip-path: inset(10% 0 60% 0); transform: translate(-6px, 0); opacity: 0.8; }
+          91% { clip-path: inset(60% 0 15% 0); transform: translate(5px, 0); opacity: 0.8; }
+          92% { clip-path: inset(30% 0 40% 0); transform: translate(-4px, 0); opacity: 0.8; }
+          93% { clip-path: inset(80% 0 5% 0); transform: translate(6px, 0); opacity: 0.8; }
+          94% { clip-path: inset(45% 0 25% 0); transform: translate(-3px, 0); opacity: 0.8; }
+          95% { clip-path: inset(100% 0 100% 0); transform: translate(0); }
         }
-
         @keyframes glitch-blue {
           0%, 89%, 100% { clip-path: inset(100% 0 100% 0); transform: translate(0); }
-          90%  { clip-path: inset(40% 0 30% 0);  transform: translate(6px, 0);  opacity: 0.8; }
-          91%  { clip-path: inset(15% 0 70% 0);  transform: translate(-5px, 0); opacity: 0.8; }
-          92%  { clip-path: inset(70% 0 10% 0);  transform: translate(4px, 0);  opacity: 0.8; }
-          93%  { clip-path: inset(20% 0 55% 0);  transform: translate(-6px, 0); opacity: 0.8; }
-          94%  { clip-path: inset(55% 0 20% 0);  transform: translate(3px, 0);  opacity: 0.8; }
-          95%  { clip-path: inset(100% 0 100% 0); transform: translate(0); }
+          90% { clip-path: inset(40% 0 30% 0); transform: translate(6px, 0); opacity: 0.8; }
+          91% { clip-path: inset(15% 0 70% 0); transform: translate(-5px, 0); opacity: 0.8; }
+          92% { clip-path: inset(70% 0 10% 0); transform: translate(4px, 0); opacity: 0.8; }
+          93% { clip-path: inset(20% 0 55% 0); transform: translate(-6px, 0); opacity: 0.8; }
+          94% { clip-path: inset(55% 0 20% 0); transform: translate(3px, 0); opacity: 0.8; }
+          95% { clip-path: inset(100% 0 100% 0); transform: translate(0); }
         }
-
         @keyframes glitch-scan {
           0%, 89%, 100% { opacity: 0; }
-          90%  { opacity: 0.06; transform: translateY(-2px); }
-          91%  { opacity: 0.04; transform: translateY(3px);  }
-          92%  { opacity: 0.07; transform: translateY(-1px); }
-          93%  { opacity: 0;    }
-          94%  { opacity: 0.05; transform: translateY(2px);  }
-          95%  { opacity: 0;    }
+          90% { opacity: 0.06; transform: translateY(-2px); }
+          91% { opacity: 0.04; transform: translateY(3px); }
+          92% { opacity: 0.07; transform: translateY(-1px); }
+          93% { opacity: 0; }
+          94% { opacity: 0.05; transform: translateY(2px); }
+          95% { opacity: 0; }
         }
-
         @keyframes flicker {
           0%, 95%, 100% { opacity: 1; }
-          96%  { opacity: 0.88; }
-          97%  { opacity: 1;    }
-          98%  { opacity: 0.92; }
-          99%  { opacity: 1;    }
+          96% { opacity: 0.88; }
+          97% { opacity: 1; }
+          98% { opacity: 0.92; }
+          99% { opacity: 1; }
         }
-
         @keyframes glow-pulse {
-          0%, 100% { text-shadow:
-            0 0 10px rgba(37,99,235,0.3),
-            0 0 20px rgba(37,99,235,0.15),
-            0 4px 24px rgba(37,99,235,0.18);
-          }
-          50% { text-shadow:
-            0 0 20px rgba(37,99,235,0.6),
-            0 0 40px rgba(37,99,235,0.3),
-            0 0 60px rgba(37,99,235,0.15),
-            0 4px 24px rgba(37,99,235,0.25);
-          }
+          0%, 100% { text-shadow: 0 0 10px rgba(37,99,235,0.3), 0 0 20px rgba(37,99,235,0.15), 0 4px 24px rgba(37,99,235,0.18); }
+          50% { text-shadow: 0 0 20px rgba(37,99,235,0.6), 0 0 40px rgba(37,99,235,0.3), 0 0 60px rgba(37,99,235,0.15), 0 4px 24px rgba(37,99,235,0.25); }
         }
-
         .glitch-wrapper {
           position: relative;
           display: inline-block;
-          animation:
-            glitch-main 6s ease-in-out infinite,
-            flicker 8s ease-in-out infinite,
-            glow-pulse 3s ease-in-out infinite;
+          animation: glitch-main 6s ease-in-out infinite, flicker 8s ease-in-out infinite, glow-pulse 3s ease-in-out infinite;
         }
-
-        .glitch-wrapper::before,
-        .glitch-wrapper::after {
+        .glitch-wrapper::before, .glitch-wrapper::after {
           content: attr(data-text);
           position: absolute;
           inset: 0;
@@ -97,44 +77,32 @@ function GlitchTitle() {
           white-space: nowrap;
           pointer-events: none;
         }
-
         .glitch-wrapper::before {
           color: #ef4444;
           animation: glitch-red 6s ease-in-out infinite;
           text-shadow: none;
         }
-
         .glitch-wrapper::after {
           color: #06b6d4;
           animation: glitch-blue 6s ease-in-out infinite;
           text-shadow: none;
         }
-
         .glitch-scan {
           position: absolute;
           inset: 0;
-          background: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 2px,
-            rgba(37,99,235,0.03) 2px,
-            rgba(37,99,235,0.03) 4px
-          );
+          background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(37,99,235,0.03) 2px, rgba(37,99,235,0.03) 4px);
           animation: glitch-scan 6s ease-in-out infinite;
           pointer-events: none;
         }
-
         @keyframes floatDot {
-          0%, 100% { transform: translateY(0px);    opacity: 0.35; }
-          50%      { transform: translateY(-12px);   opacity: 0.8;  }
+          0%, 100% { transform: translateY(0px); opacity: 0.35; }
+          50% { transform: translateY(-12px); opacity: 0.8; }
         }
-
         @keyframes scrollBounce {
           0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(6px); }
+          50% { transform: translateY(6px); }
         }
       `}</style>
-
             <div style={{ position: 'relative', marginBottom: '20px' }}>
                 <div className="glitch-scan" />
                 <h1
@@ -184,7 +152,6 @@ function FloatingDots() {
         { top: '10%', left: '40%', size: 3, delay: '3s', dur: '5s' },
         { top: '85%', left: '30%', size: 5, delay: '0.8s', dur: '3.8s' },
     ];
-
     return (
         <>
             {dots.map((d, i) => (
@@ -210,17 +177,205 @@ function FloatingDots() {
     );
 }
 
+// ── Role Modal Sederhana ──
+// Menggunakan Portal agar blur overlay menutupi SELURUH halaman termasuk AtomBackground
+function RoleModal({ onClose }) {
+    const navigate = useNavigate();
+    const { t, language } = useLanguage();
+    const isId = language !== 'en';
+    const [showAhliOptions, setShowAhliOptions] = useState(false);
+
+    // Overlay style yang digunakan oleh kedua tampilan modal
+    const overlayStyle = {
+        position: 'fixed',
+        inset: 0,
+        // Tambahkan background gelap semi-transparan agar blur lebih merata
+        background: 'rgba(220, 232, 245, 0.45)',
+        backdropFilter: 'blur(2px)',
+        WebkitBackdropFilter: 'blur(2px)', // Safari support
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        // zIndex sangat tinggi agar berada di atas SEMUA elemen termasuk Three.js canvas
+        zIndex: 9999,
+    };
+
+    const cardStyle = {
+        background: 'rgba(255,255,255,0.97)',
+        borderRadius: 16,
+        padding: '2rem 2.5rem',
+        textAlign: 'center',
+        boxShadow: '0 20px 60px rgba(10,20,80,0.2)',
+        border: '1px solid rgba(37,99,235,0.15)',
+        position: 'relative',
+    };
+
+    const modalContent = showAhliOptions ? (
+        // ── Sub-pilihan Ahli ──
+        <div onClick={onClose} style={overlayStyle}>
+            <div onClick={(e) => e.stopPropagation()} style={{ ...cardStyle, width: 340 }}>
+                {/* Tombol Tutup */}
+                <button
+                    onClick={onClose}
+                    style={{
+                        position: 'absolute', top: 12, right: 12,
+                        background: 'none', border: 'none', fontSize: 18,
+                        cursor: 'pointer', color: '#9ca3af', lineHeight: 1,
+                    }}
+                >
+                    X
+                </button>
+
+                {/* Tombol Kembali */}
+                <button
+                    onClick={() => setShowAhliOptions(false)}
+                    style={{
+                        position: 'absolute', top: 12, left: 12,
+                        background: 'none', border: 'none', fontSize: 13,
+                        cursor: 'pointer', color: '#9ca3af', lineHeight: 1,
+                    }}
+                >
+                    {t('homeBack')}
+                </button>
+                <h2 style={{
+                    fontSize: 20, fontWeight: 800, color: '#1e3a8a',
+                    margin: '0 0 6px', fontFamily: "'Rajdhani', sans-serif",
+                }}>
+                    {t('homePilih')}
+                </h2>
+                <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 24 }}>
+                    {t('homeKet')}
+                </p>
+
+                {/* Tombol Simulasi Standar */}
+                <button
+                    onClick={() => { onClose(); navigate('/simulation', { replace: true, state: { fromRole: 'ahli' } }); }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2563eb'; }}
+                    style={{
+                        width: '100%', padding: '13px', marginBottom: 10,
+                        background: 'transparent', color: '#2563eb',
+                        border: '2px solid #2563eb', borderRadius: 8,
+                        fontSize: 14, fontWeight: 700, letterSpacing: '1.5px',
+                        cursor: 'pointer', fontFamily: "'Poppins',sans-serif",
+                        transition: 'all 0.2s ease',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                    }}
+                >
+                    <span>{t('homePilihGame')}</span>
+                    <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: 0 }}>
+                        {t('homePilihKet')}
+                    </span>
+                </button>
+
+                {/* Tombol Mode Advanced */}
+                <button
+                    onClick={() => { onClose(); navigate('/irl-mode'); }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#0f766e'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#0f766e'; }}
+                    style={{
+                        width: '100%', padding: '13px', marginBottom: 16,
+                        background: 'transparent', color: '#0f766e',
+                        border: '2px solid #0f766e', borderRadius: 8,
+                        fontSize: 14, fontWeight: 700, letterSpacing: '1.5px',
+                        cursor: 'pointer', fontFamily: "'Poppins',sans-serif",
+                        transition: 'all 0.2s ease',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                    }}
+                >
+                    <span>{t('homePilihGame1')}</span>
+                    <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: 0 }}>
+                        {t('homePilihKet1')}
+                    </span>
+                </button>
+            </div>
+        </div>
+    ) : (
+        // ── Pilihan Peran Utama ──
+        <div onClick={onClose} style={overlayStyle}>
+            <div onClick={(e) => e.stopPropagation()} style={{ ...cardStyle, width: 320 }}>
+                {/* Tombol Tutup */}
+                <button
+                    onClick={onClose}
+                    style={{
+                        position: 'absolute', top: 12, right: 12,
+                        background: 'none', border: 'none', fontSize: 18,
+                        cursor: 'pointer', color: '#9ca3af', lineHeight: 1,
+                    }}
+                >
+                    X
+                </button>
+
+                <p style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: '3px',
+                    color: '#2563eb', marginBottom: 8,
+                    fontFamily: "'Rajdhani', sans-serif",
+                }}>
+                    {t('homeProfesi')}
+                </p>
+                <h2 style={{
+                    fontSize: 22, fontWeight: 800, color: '#1e3a8a',
+                    margin: '0 0 6px', fontFamily: "'Rajdhani', sans-serif",
+                }}>
+                    {t('profesiTitle')}
+                </h2>
+                <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 24 }}>
+                    {t('profesiDesc')}
+                </p>
+
+                {/* Tombol Pemula */}
+                <button
+                    onClick={() => { onClose(); navigate('/prepare'); }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#1e3a8a'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#1e3a8a'; }}
+                    style={{
+                        width: '100%', padding: '13px', marginBottom: 10,
+                        background: 'transparent', color: '#1e3a8a',
+                        border: '2px solid #1e3a8a', borderRadius: 8,
+                        fontSize: 15, fontWeight: 700, letterSpacing: '2px',
+                        cursor: 'pointer', fontFamily: "'Poppins',sans-serif",
+                        transition: 'all 0.2s ease',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                    }}
+                >
+                    <span>{t('profesiPemula')}</span>
+                </button>
+
+                {/* Tombol Ahli */}
+                <button
+                    onClick={() => setShowAhliOptions(true)}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2563eb'; }}
+                    style={{
+                        width: '100%', padding: '13px', marginBottom: 16,
+                        background: 'transparent', color: '#2563eb',
+                        border: '2px solid #2563eb', borderRadius: 8,
+                        fontSize: 15, fontWeight: 700, letterSpacing: '2px',
+                        cursor: 'pointer', fontFamily: "'Poppins',sans-serif",
+                        transition: 'all 0.2s ease',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                    }}
+                >
+                    <span>{t('profesiAhli')}</span>
+                </button>
+            </div>
+        </div>
+    );
+    return ReactDOM.createPortal(modalContent, document.body);
+}
+
 // ── Main HomePage ──
 export default function HomePage() {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const { resetProgress } = useProgress();
     const [visible, setVisible] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
+        resetProgress();
         const timer = setTimeout(() => setVisible(true), 100);
         return () => clearTimeout(timer);
-        resetProgress();
     }, []);
 
     return (
@@ -260,57 +415,57 @@ export default function HomePage() {
             </div>
 
             {/* Hero Content */}
-            <div
-                style={{
-                    ...s.hero,
-                    opacity: visible ? 1 : 0,
-                    transform: visible ? 'translateY(0)' : 'translateY(30px)',
-                    transition: 'opacity 0.9s ease, transform 0.9s ease',
-                }}
-            >
-                {/* Badge */}
-                <div style={s.badge}>
-                    <span style={s.badgeDot}>◆</span>
-                    <span style={s.badgeText}>BRIN · INDONESIA · REAKTOR</span>
-                    <span style={s.badgeDot}>◆</span>
-                </div>
-
-                {/* Glitch Title */}
-                <GlitchTitle />
-
-                {/* Subtitle */}
-                <div style={s.subtitleRow}>
-                    <div style={s.subLine} />
-                    <span style={s.subtitle}>{t('homeSubtitle')}</span>
-                    <div style={s.subLine} />
-                </div>
-
-                {/* Description */}
-                <p style={s.desc}>
-                    {t('homeDescription') ||
-                        'Simulasi virtual Reaktor Kartini – Reaktor Riset TRIGA Mark II milik BRIN Yogyakarta. Kendalikan batang kontrol, pantau daya reaktor, dan pelajari fisika reaktor nuklir secara aman.'}
-                </p>
-
-                {/* CTA Button */}
-                <button
-                    style={s.cta}
-                    onClick={() => navigate('/prepare')}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#1e4fd8';
-                        e.currentTarget.style.color = '#ffffff';
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                        e.currentTarget.style.boxShadow = '0 8px 32px rgba(37,99,235,0.35)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = '#1e4fd8';
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.boxShadow = 'none';
+            <div style={s.heroWrapper}>
+                <div
+                    style={{
+                        ...s.hero,
+                        opacity: visible ? 1 : 0,
+                        transform: visible ? 'translateY(0)' : 'translateY(30px)',
+                        transition: 'opacity 0.9s ease, transform 0.9s ease',
                     }}
                 >
-                    {t('btnSelengkapnya')}
-                </button>
+                    {/* Badge */}
+                    <div style={s.badge}>
+                        <span style={s.badgeDot}>◆</span>
+                        <span style={s.badgeText}>BRIN · INDONESIA · REAKTOR</span>
+                        <span style={s.badgeDot}>◆</span>
+                    </div>
 
+                    {/* Glitch Title */}
+                    <GlitchTitle />
+
+                    {/* Subtitle */}
+                    <div style={s.subtitleRow}>
+                        <div style={s.subLine} />
+                        <span style={s.subtitle}>{t('homeSubtitle')}</span>
+                        <div style={s.subLine} />
+                    </div>
+
+                    {/* Description */}
+                    <p style={s.desc}>
+                        {t('homeDescription')}
+                    </p>
+
+                    {/* CTA Button */}
+                    <button
+                        style={s.cta}
+                        onClick={() => setShowModal(true)}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#1e4fd8';
+                            e.currentTarget.style.color = '#ffffff';
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                            e.currentTarget.style.boxShadow = '0 8px 32px rgba(37,99,235,0.35)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = '#1e4fd8';
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}
+                    >
+                        {t('btnSelengkapnya')}
+                    </button>
+                </div>
             </div>
 
             {/* Footer */}
@@ -318,6 +473,9 @@ export default function HomePage() {
                 <p style={s.footerText}>{t('footerText')}</p>
                 <p style={s.footerSub}>{t('footerSub')}</p>
             </div>
+            {showModal && (
+                <RoleModal onClose={() => setShowModal(false)} />
+            )}
         </div>
     );
 }
@@ -333,7 +491,16 @@ const s = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+    },
+    heroWrapper: {
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
+        minHeight: 0,
     },
     bgWrapper: {
         position: 'absolute',
@@ -383,8 +550,6 @@ const s = {
         zIndex: 100,
     },
     hero: {
-        position: 'relative',
-        zIndex: 10,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -455,31 +620,12 @@ const s = {
         fontFamily: "'Rajdhani', sans-serif",
         marginBottom: 36,
     },
-    scrollHint: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 8,
-    },
-    scrollDot: {
-        width: 6,
-        height: 6,
-        borderRadius: '50%',
-        background: '#2563eb',
-        opacity: 0.5,
-        animation: 'scrollBounce 2s ease-in-out infinite',
-    },
-    scrollText: {
-        fontSize: 11,
-        color: '#6B7280',
-        letterSpacing: '1px',
-        margin: 0,
-    },
     footer: {
-        position: 'absolute',
-        bottom: 20,
-        textAlign: 'center',
+        position: 'relative',
         zIndex: 10,
+        textAlign: 'center',
+        paddingBottom: 20,
+        flexShrink: 0,
     },
     footerText: {
         fontSize: 11,

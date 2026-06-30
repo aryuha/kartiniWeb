@@ -132,7 +132,6 @@ const s = {
         gap: 8,
         background: 'linear-gradient(180deg, #0f0505 0%, #080303 100%)',
         borderTop: '2px solid #3a0a0a',
-        // Tidak pakai minHeight agar tidak memaksa ruang berlebih
     },
 
     indicator: {
@@ -161,7 +160,7 @@ const s = {
         gap: 6,
     },
 
-    // Tombol SCRAM – lebih kecil agar tidak terpotong
+    // Tombol SCRAM 
     scramBtn: {
         width: 90,
         height: 90,

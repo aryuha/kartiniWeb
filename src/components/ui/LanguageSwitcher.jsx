@@ -61,5 +61,4 @@ const s = {
     }
 }
 
-// ← Hanya SATU export default di sini
 export default LanguageSwitcher
